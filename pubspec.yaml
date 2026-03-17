@@ -28,14 +28,15 @@ dependencies:
   get_it: ^8.2.0
 
   # Firebase
-  firebase_core: ^4.0.0
-  firebase_auth: ^6.0.0
+  firebase_core: ^4.5.0
+  firebase_auth: ^6.2.0
 
   # 라우팅
   go_router: ^16.3.0
 
   # Auth
-  google_sign_in: ^6.2.1
+  google_sign_in: ^7.2.0
+  sign_in_with_apple: ^7.0.1
 
   # Utils
   flutter_dotenv: ^6.0.0 # dotnev
