@@ -1,3 +1,5 @@
+import 'package:ailook_flutter/app/di/modules/auth_di.dart';
+import 'package:ailook_flutter/app/di/modules/user_di.dart';
 import 'package:get_it/get_it.dart';
 
 final locator = GetIt.I;
@@ -29,7 +31,8 @@ final class AppBinder {
     _initTopPriority();
 
     for (final di in [
-
+      AuthDependencyInjection(),
+      UserDependencyInjection(),
     ]) {
       di.init();
     }
