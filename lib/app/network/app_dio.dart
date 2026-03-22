@@ -31,7 +31,7 @@ class _AppDio with DioMixin implements Dio {
       receiveDataWhenStatusError: true,
     );
 
-    (transformer as BackgroundTransformer).jsonDecodeCallback = parseJson;
+    transformer = BackgroundTransformer()..jsonDecodeCallback = parseJson;
 
     interceptors.addAll([
       TokenInterceptor(),

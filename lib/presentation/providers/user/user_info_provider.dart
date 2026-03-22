@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'dart:developer';
-
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ailook_flutter/features/user/user.dart';
 import 'package:ailook_flutter/presentation/providers/user/user_auth_provider.dart';
@@ -14,52 +13,37 @@ class UserInfo extends _$UserInfo {
     final userAuth = ref.watch(userAuthProvider);
 
     if (userAuth == null) {
-      throw Exception('유저 인증 정보가 존재하지 않습니다(로그아웃 이후 다시 로그인 시도할 경우 정상적인 시도입니다)');
+      return null;
     }
 
-    final userData = await getUserProfileUseCase();
+    // Use GetIt locator (via user.dart final variable)
+    final result = await getUserProfileUseCase.call();
 
-    return userData.fold(
-      onSuccess: (info) {
-        AppUserInfo().initialize(info.profile as UserProfileEntity?);
-        return info.profile as UserProfileEntity;
-      },
-      onFailure: (e) {
+    return result.fold(
+      onSuccess: (response) => response.profile,
+      onFailure: (error) {
+        debugPrint('Profile Fetch Error: $error');
         return null;
       },
     );
   }
 
   Future<void> createData(UserProfileEntity data) async {
-    final createUserData = await submitUserProfileUseCase(data);
-    await createUserData.fold(
-      onSuccess: (value) async {
+    // Use GetIt locator (via user.dart final variable)
+    final result = await submitUserProfileUseCase.call(data);
+
+    result.fold(
+      onSuccess: (_) {
         ref.invalidateSelf();
-
-        await future;
       },
-      onFailure: (e) {
-
-        throw e;
+      onFailure: (error) {
+        throw error;
       },
     );
+    await future;
   }
 
   void edit(UserProfileEntity user) {
     state = AsyncData(user);
-  }
-}
-
-final class AppUserInfo {
-  static final AppUserInfo _instance = AppUserInfo._internal();
-
-  factory AppUserInfo() => _instance;
-
-  AppUserInfo._internal();
-
-  UserProfileEntity? instance;
-
-  void initialize(UserProfileEntity? info) {
-    instance = info;
   }
 }

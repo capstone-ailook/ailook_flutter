@@ -5,16 +5,15 @@ import 'package:ailook_flutter/features/user/user.dart';
 final class UserDependencyInjection extends FeatureDependencyInjection {
   @override
   void dataSources() {
-    locator
-      ..registerLazySingleton<UserRemoteDataSource>(
-        UserRemoteDataSourceImpl.new,
-      );
+    locator.registerLazySingleton<UserRemoteDataSource>(
+      UserRemoteDataSourceImpl.new,
+    );
   }
 
   @override
   void repositories() {
     locator.registerLazySingleton<UserRepository>(
-          () => UserRepositoryImpl(
+      () => UserRepositoryImpl(
         userRemoteDataSource,
       ),
     );
@@ -24,12 +23,12 @@ final class UserDependencyInjection extends FeatureDependencyInjection {
   void useCases() {
     locator
       ..registerFactory(
-            () => GetUserProfileUseCase(
-              userRepository,
+        () => GetUserProfileUseCase(
+          userRepository,
         ),
       )
       ..registerFactory(
-            () => SubmitUserProfileUseCase(
+        () => SubmitUserProfileUseCase(
           userRepository,
         ),
       );

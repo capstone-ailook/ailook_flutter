@@ -33,7 +33,7 @@ final class UserInfoProvider
   UserInfo create() => UserInfo();
 }
 
-String _$userInfoHash() => r'97eeb49f192f9953bd805defb17738fa1cce9758';
+String _$userInfoHash() => r'b5861f473777c22454e64895d9cae8906f8f93ae';
 
 abstract class _$UserInfo extends $AsyncNotifier<UserProfileEntity?> {
   FutureOr<UserProfileEntity?> build();

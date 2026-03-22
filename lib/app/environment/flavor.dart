@@ -21,7 +21,6 @@ class Flavor {
 
   static void initialize(Environment type) {
     _env = type;
-    _api = apiUrl;
   }
 
   /// [env]에 따라 어플리케이션 초기 설정을 진행한다.
@@ -38,12 +37,18 @@ class Flavor {
       fileName: env.dotFileName,
     );
 
-    // final option = env.firebaseOption;
-    //
-    // /// FireBase 초기화
-    // await Firebase.initializeApp(
-    //   options: option,
-    // );
+    _api = env.apiUrl;
+
+    final option = env.firebaseOption;
+
+    /// FireBase 초기화
+    try {
+      await Firebase.initializeApp(
+        options: option,
+      );
+    } catch (e) {
+      debugPrint('Firebase initialization warning: $e');
+    }
 
     /// 앱 DI 실행
     await AppBinder.init();

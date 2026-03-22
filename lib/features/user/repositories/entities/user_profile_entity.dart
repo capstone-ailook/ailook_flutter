@@ -5,14 +5,14 @@ class UserProfileResponseEntity {
   final bool exists;
 
   /// 유저 프로필
-  final UserProfileModel? profile;
+  final UserProfileEntity? profile;
 
   UserProfileResponseEntity({required this.exists, required this.profile});
 
   factory UserProfileResponseEntity.fromModel(UserProfileResponse model) {
     return UserProfileResponseEntity(
       exists: model.exists,
-      profile: model.profile,
+      profile: model.profile != null ? UserProfileEntity.fromModel(model.profile!) : null,
     );
   }
 }
