@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "110772501654",
+    "project_id": "ailook-flutter-dev",
+    "storage_bucket": "ailook-flutter-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:110772501654:android:beabbd5717d4847f9196b7",
+        "android_client_info": {
+          "package_name": "com.ailook.app.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "110772501654-ltr4hl88274j3vvm86mhbr1bd0u0gfc4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHPzjzScilXjLa17euV7a1t8pGXnH9ank"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "110772501654-ltr4hl88274j3vvm86mhbr1bd0u0gfc4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "110772501654-0i9ueetecd6d3mu17udm8611r5oi9nnb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ailook.app.dev"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

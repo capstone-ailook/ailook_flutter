@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>110772501654-0i9ueetecd6d3mu17udm8611r5oi9nnb.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.110772501654-0i9ueetecd6d3mu17udm8611r5oi9nnb</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBbRT2h3zeo5xkHCzEiBaze-jtTb3JtS-E</string>
+	<key>GCM_SENDER_ID</key>
+	<string>110772501654</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.ailook.app.dev</string>
+	<key>PROJECT_ID</key>
+	<string>ailook-flutter-dev</string>
+	<key>STORAGE_BUCKET</key>
+	<string>ailook-flutter-dev.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:110772501654:ios:dc2fe50904e13a6b9196b7</string>
+</dict>
+</plist>
