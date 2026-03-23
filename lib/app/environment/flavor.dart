@@ -18,6 +18,7 @@ class Flavor {
   static Environment get env => _env;
 
   static String get apiUrl => _api;
+  static String get googleServerClientId => dotenv.env['GOOGLE_SERVER_CLIENT_ID']!;
 
   static void initialize(Environment type) {
     _env = type;
@@ -41,13 +42,17 @@ class Flavor {
 
     final option = env.firebaseOption;
 
-    /// FireBase 초기화
+    /// Firebase 초기화
     try {
-      await Firebase.initializeApp(
-        options: option,
-      );
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: option,
+        );
+      }
     } catch (e) {
-      debugPrint('Firebase initialization warning: $e');
+      if (!e.toString().contains('duplicate-app')) {
+        debugPrint("Firebase initialization error: $e");
+      }
     }
 
     /// 앱 DI 실행

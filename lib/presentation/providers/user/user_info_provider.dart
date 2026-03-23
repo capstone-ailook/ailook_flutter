@@ -9,7 +9,7 @@ part 'user_info_provider.g.dart';
 @Riverpod(keepAlive: true)
 class UserInfo extends _$UserInfo {
   @override
-  FutureOr<UserProfileEntity?> build() async {
+  FutureOr<UserProfileResponseEntity?> build() async {
     final userAuth = ref.watch(userAuthProvider);
 
     if (userAuth == null) {
@@ -20,10 +20,10 @@ class UserInfo extends _$UserInfo {
     final result = await getUserProfileUseCase.call();
 
     return result.fold(
-      onSuccess: (response) => response.profile,
+      onSuccess: (response) => response,
       onFailure: (error) {
         debugPrint('Profile Fetch Error: $error');
-        return null;
+        throw error;
       },
     );
   }
@@ -44,6 +44,6 @@ class UserInfo extends _$UserInfo {
   }
 
   void edit(UserProfileEntity user) {
-    state = AsyncData(user);
+    state = AsyncData(UserProfileResponseEntity(exists: true, profile: user));
   }
 }

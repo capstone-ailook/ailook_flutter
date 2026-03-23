@@ -13,7 +13,7 @@ part of 'user_info_provider.dart';
 final userInfoProvider = UserInfoProvider._();
 
 final class UserInfoProvider
-    extends $AsyncNotifierProvider<UserInfo, UserProfileEntity?> {
+    extends $AsyncNotifierProvider<UserInfo, UserProfileResponseEntity?> {
   UserInfoProvider._()
       : super(
           from: null,
@@ -33,18 +33,19 @@ final class UserInfoProvider
   UserInfo create() => UserInfo();
 }
 
-String _$userInfoHash() => r'b5861f473777c22454e64895d9cae8906f8f93ae';
+String _$userInfoHash() => r'18c6bcf4374c9b806f85e8aa21722e62277a0ebb';
 
-abstract class _$UserInfo extends $AsyncNotifier<UserProfileEntity?> {
-  FutureOr<UserProfileEntity?> build();
+abstract class _$UserInfo extends $AsyncNotifier<UserProfileResponseEntity?> {
+  FutureOr<UserProfileResponseEntity?> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref =
-        this.ref as $Ref<AsyncValue<UserProfileEntity?>, UserProfileEntity?>;
+    final ref = this.ref as $Ref<AsyncValue<UserProfileResponseEntity?>,
+        UserProfileResponseEntity?>;
     final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<UserProfileEntity?>, UserProfileEntity?>,
-        AsyncValue<UserProfileEntity?>,
+        AnyNotifier<AsyncValue<UserProfileResponseEntity?>,
+            UserProfileResponseEntity?>,
+        AsyncValue<UserProfileResponseEntity?>,
         Object?,
         Object?>;
     element.handleCreate(ref, build);

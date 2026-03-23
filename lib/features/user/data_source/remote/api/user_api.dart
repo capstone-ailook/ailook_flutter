@@ -8,7 +8,7 @@ part 'user_api.g.dart';
 abstract class UserAPI {
   factory UserAPI(Dio dio, {String baseUrl}) = _UserAPI;
 
-  @GET("/user/profile")
+  @GET("/user/profile/")
   @Headers({"requiresToken": true})
   Future<UserProfileResponse> getProfile();
 
