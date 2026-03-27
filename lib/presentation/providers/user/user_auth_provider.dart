@@ -23,6 +23,7 @@ class UserAuth extends _$UserAuth {
       },
       onFailure: (e) {
         print('에임 $e');
+        throw e;
       },
     );
   }

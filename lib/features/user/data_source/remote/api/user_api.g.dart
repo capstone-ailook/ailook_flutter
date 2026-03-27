@@ -30,7 +30,7 @@ class _UserAPI implements UserAPI {
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/user/profile',
+            '/user/profile/',
             queryParameters: queryParameters,
             data: _data,
           )

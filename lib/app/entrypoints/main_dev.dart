@@ -6,7 +6,6 @@ import 'package:ailook_flutter/app/environment/environment.enum.dart';
 
 void main() async {
   Flavor.initialize(Environment.dev);
-  await Flavor.instance.setup();
-  
-  runApp(const ProviderScope(child: AILookApp()));
+
+  return runFlavoredApp();
 }

@@ -1,201 +1,147 @@
-import 'package:ailook_flutter/presentation/providers/user/user_auth_provider.dart';
-import 'package:ailook_flutter/presentation/providers/user/user_info_provider.dart';
-import 'package:ailook_flutter/features/auth/auth.dart';
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:ailook_flutter/app/environment/flavor.dart';
+import 'package:ailook_flutter/app/router/router.dart';
+import 'package:ailook_flutter/app/style/app_color.dart';
+import 'package:ailook_flutter/app/style/app_theme.dart';
+import 'package:ailook_flutter/core/services/app_size.dart';
+import 'package:ailook_flutter/presentation/widgets/common/layout/mobie_layout_constraint_layout.dart';
 
-class AILookApp extends StatelessWidget {
-  const AILookApp({super.key});
+base class ProviderLogger extends ProviderObserver {
+  @override
+  void didUpdateProvider(
+    ProviderObserverContext context,
+    Object? previousValue,
+    Object? newValue,
+  ) {
+    log('''
+{ 
+  "provider": "${context.provider.name ?? context.provider.runtimeType}",
+  "newValue": "$newValue"
+}''');
+  }
+
+  @override
+  void didDisposeProvider(ProviderObserverContext context) {
+    log('${context.provider.name ?? context.provider.runtimeType} dispose');
+  }
+}
+
+final globalContainer = ProviderContainer(
+  observers: [
+    ProviderLogger(),
+    MyObserver(),
+  ],
+);
+
+Future<void> runFlavoredApp() async {
+  await Flavor.instance.setup();
+  // await SystemChrome.setPreferredOrientations([
+  //   DeviceOrientation.portraitDown,
+  //   DeviceOrientation.portraitUp,
+  // ]);
+
+  return runApp(
+    UncontrolledProviderScope(
+      container: globalContainer,
+      child: App(),
+    ),
+  );
+}
+
+class App extends StatelessWidget {
+  App({super.key}) {
+    _initLoadingIndicator();
+  }
+
+  static void _initLoadingIndicator() {
+    EasyLoading.instance
+      ..indicatorType = EasyLoadingIndicatorType.ring
+      ..loadingStyle = EasyLoadingStyle.custom
+      // 로딩 인디케이터 배경 색상. 그림자는 사용하지 않아도 될 듯
+      ..backgroundColor = Colors.transparent
+      ..boxShadow = []
+      ..indicatorColor = Colors.white
+      // 로딩 인디케이터 호출 시 오베리어 컬러
+      ..maskType = EasyLoadingMaskType.black
+      ..maskColor = Colors.transparent
+      ..textColor = Colors.white
+      ..dismissOnTap = false;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'AI Closet',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.blue,
-      ),
-      home: const AuthWrapper(),
-    );
-  }
-}
-
-class AuthWrapper extends ConsumerWidget {
-  const AuthWrapper({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(userAuthProvider);
-
-    if (user == null) {
-      return const LoginScreen();
-    }
-
-    return const ProfileScreen();
-  }
-}
-
-class LoginScreen extends ConsumerWidget {
-  const LoginScreen({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Spacer(),
-              const Icon(Icons.checkroom, size: 80, color: Colors.blue),
-              const SizedBox(height: 24),
-              Text(
-                'AI Closet',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue[900],
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Sign in to sync your wardrobe across devices',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-              ),
-              const Spacer(),
-              _SocialLoginButton(
-                text: 'Continue with Google',
-                textColor: Colors.black87,
-                backgroundColor: Colors.white,
-                borderColor: Colors.grey.shade300,
-                iconWidget: _buildGoogleGIcon(),
-                onPressed: () => ref
-                    .read(userAuthProvider.notifier)
-                    .signInOAuth(UserAccountProvider.google),
-              ),
-              const SizedBox(height: 16),
-              _SocialLoginButton(
-                text: 'Continue with Apple',
-                textColor: Colors.white,
-                backgroundColor: Colors.black,
-                borderColor: Colors.black,
-                iconWidget: const Icon(Icons.apple, size: 26, color: Colors.white),
-                onPressed: () => ref
-                    .read(userAuthProvider.notifier)
-                    .signInOAuth(UserAccountProvider.apple),
-              ),
-              const SizedBox(height: 48),
-            ],
+    return Consumer(
+      builder: (context, ref, child) {
+        return MaterialApp.router(
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('ko'), Locale('en')],
+          locale: const Locale('ko'),
+          routerConfig: AppRouter.appRouter(ref),
+          debugShowCheckedModeBanner: false,
+          title: 'ailook',
+          themeMode: ThemeMode.light,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          builder: EasyLoading.init(
+            builder: (context, child) {
+              AppColor.init(context);
+              AppSize.init(context);
+              return FToastBuilder()(
+                context,
+                MLayoutConstraintLayout(context, child),
+              );
+            },
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGoogleGIcon() {
-    return Container(
-      width: 24,
-      height: 24,
-      alignment: Alignment.center,
-      child: const Text(
-        'G',
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.blue, // Just a placeholder Google flavor
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
-class _SocialLoginButton extends StatelessWidget {
-  final String text;
-  final Color textColor;
-  final Color backgroundColor;
-  final Color borderColor;
-  final Widget iconWidget;
-  final VoidCallback onPressed;
-
-  const _SocialLoginButton({
-    required this.text,
-    required this.textColor,
-    required this.backgroundColor,
-    required this.borderColor,
-    required this.iconWidget,
-    required this.onPressed,
-  });
-
+base class MyObserver extends ProviderObserver {
   @override
-  Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        foregroundColor: textColor,
-        backgroundColor: backgroundColor,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: borderColor),
-        ),
-      ),
-      icon: iconWidget,
-      label: Text(
-        text,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: textColor),
-      ),
-    );
+  void didAddProvider(
+    ProviderObserverContext context,
+    Object? value,
+  ) {
+    print('Provider ${context.provider} was initialized with $value');
   }
-}
-
-class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final userInfo = ref.watch(userInfoProvider);
+  void didDisposeProvider(
+    ProviderObserverContext context,
+  ) {
+    print('Provider ${context.provider} was disposed');
+  }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        actions: [
-          IconButton(
-            onPressed: () => ref.read(userAuthProvider.notifier).signOut(),
-            icon: const Icon(Icons.logout),
-          ),
-        ],
-      ),
-      body: userInfo.when(
-        data: (profile) {
-          if (profile == null) {
-            return const Center(child: Text('No profile found. Please create one.'));
-          }
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Nickname: ${profile.nickname}', style: Theme.of(context).textTheme.headlineSmall),
-                const SizedBox(height: 8),
-                Text('Gender: ${profile.gender}'),
-                Text('Age: ${profile.age}'),
-                Text('Height: ${profile.height} cm'),
-                Text('Weight: ${profile.weight} kg'),
-              ],
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
-      ),
-    );
+  @override
+  void didUpdateProvider(
+    ProviderObserverContext context,
+    Object? previousValue,
+    Object? newValue,
+  ) {
+    print(
+        'Provider ${context.provider} updated from $previousValue to $newValue');
+  }
+
+  @override
+  void providerDidFail(
+    ProviderObserverContext context,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    print('Provider ${context.provider} threw $error at $stackTrace');
   }
 }
