@@ -1,5 +1,8 @@
 import 'package:ailook_flutter/app/di/modules/auth_di.dart';
 import 'package:ailook_flutter/app/di/modules/user_di.dart';
+import 'package:ailook_flutter/app/di/modules/cody_di.dart';
+import 'package:ailook_flutter/app/di/modules/media_di.dart';
+import 'package:ailook_flutter/app/di/feature_di_interface.dart';
 import 'package:get_it/get_it.dart';
 
 final locator = GetIt.I;
@@ -30,10 +33,14 @@ final class AppBinder {
   static Future<void> init() async {
     _initTopPriority();
 
-    for (final di in [
+    final List<FeatureDependencyInjection> diModules = [
       AuthDependencyInjection(),
       UserDependencyInjection(),
-    ]) {
+      CodyDependencyInjection(),
+      MediaDependencyInjection(),
+    ];
+
+    for (final di in diModules) {
       di.init();
     }
   }

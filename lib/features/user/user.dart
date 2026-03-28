@@ -1,4 +1,5 @@
 import 'package:ailook_flutter/app/di/app_binding.dart';
+import 'package:ailook_flutter/core/index.dart';
 import 'package:ailook_flutter/features/user/data_source/remote/user_remote_data_source.dart';
 import 'package:ailook_flutter/features/user/repositories/user_repository.dart';
 import 'package:ailook_flutter/features/user/usecases/get_user_profile_use_case.dart';

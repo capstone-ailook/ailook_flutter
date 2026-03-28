@@ -1,4 +1,6 @@
+import 'package:ailook_flutter/core/constants/assets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:ailook_flutter/presentation/widgets/base/base_page.dart';
 import 'package:ailook_flutter/presentation/pages/sign_in/sign_in_event.dart';
@@ -15,101 +17,134 @@ class SignInPage extends BasePage with SignInEvent {
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             children: [
-              const Spacer(),
+              const Spacer(flex: 2),
 
-              // Logo
+              // Brand Logo
+              SvgPicture.asset(
+                Assets.defaultLogo,
+                width: 180,
+              ),
+              const SizedBox(height: 16),
               const Text(
-                'AILOOK',
+                'Your AI-Powered Personal Stylist',
                 style: TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 2.0,
-                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black54,
+                  letterSpacing: -0.2,
                 ),
               ),
 
-              const Spacer(),
+              const Spacer(flex: 3),
 
-              // Apple Login Button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: OutlinedButton.icon(
-                  onPressed: () => handleAppleSignIn(context, ref),
-                  icon: const Icon(Icons.apple, color: Colors.black),
-                  label: const Text(
-                    '애플로 로그인',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
+              // Social Login Section
+              _SocialLoginButton(
+                onPressed: () => handleAppleSignIn(context, ref),
+                icon: const Icon(Icons.apple, color: Colors.black, size: 24),
+                label: 'Sign in with Apple',
               ),
               const SizedBox(height: 12),
-
-              // Google Login Button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: OutlinedButton(
-                  onPressed: () => handleGoogleSignIn(context, ref),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // A simple colored Google "G" representation
-                      RichText(
-                        text: const TextSpan(
-                          children: [
-                            TextSpan(
-                                text: 'G',
-                                style: TextStyle(
-                                    color: Colors.blue,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20)),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        '구글로 로그인',
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16),
-                      ),
-                    ],
-                  ),
+              _SocialLoginButton(
+                onPressed: () => handleGoogleSignIn(context, ref),
+                icon: SvgPicture.asset(
+                  Assets.googleLogo,
+                  width: 20,
+                  height: 20,
                 ),
+                label: 'Sign in with Google',
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 48),
 
               // Terms of Service Footer
               RichText(
                 textAlign: TextAlign.center,
-                text: const TextSpan(
-                  style:
-                      TextStyle(color: Colors.grey, fontSize: 12, height: 1.5),
+                text: TextSpan(
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 12,
+                    height: 1.6,
+                    fontFamily: 'pretendard',
+                  ),
                   children: [
-                    TextSpan(text: '로그인함으로써 서비스의 '),
+                    const TextSpan(text: 'By signing in, you agree to our '),
                     TextSpan(
-                      text: '이용약관',
-                      style: TextStyle(decoration: TextDecoration.underline),
+                      text: 'Terms of Service',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
-                    TextSpan(text: ' 및\n'),
+                    const TextSpan(text: '\nand '),
                     TextSpan(
-                      text: '개인정보처리방침',
-                      style: TextStyle(decoration: TextDecoration.underline),
+                      text: 'Privacy Policy',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
-                    TextSpan(text: '에 동의하는 것으로 간주합니다.'),
+                    const TextSpan(text: '.'),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SocialLoginButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final Widget icon;
+  final String label;
+
+  const _SocialLoginButton({
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: Colors.grey[200]!),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
+        ),
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: icon,
+              ),
+            ),
+            Center(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

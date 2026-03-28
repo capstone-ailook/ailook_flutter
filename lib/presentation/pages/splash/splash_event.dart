@@ -21,7 +21,7 @@ mixin class SplashEvent {
         if (userData == null || !userData.exists) {
           const OnboardingRoute().go(context);
         } else {
-          const MainRoute().go(context);
+          CodyListRoute().go(context);
         }
       },
     );
