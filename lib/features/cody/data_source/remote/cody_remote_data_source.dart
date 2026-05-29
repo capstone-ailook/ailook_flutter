@@ -8,4 +8,8 @@ abstract interface class CodyRemoteDataSource {
   Future<ItemModel> updateItem(int id, Map<String, dynamic> body);
   Future<CodyModel> createCody(Map<String, dynamic> body);
   Future<CodyModel> updateCody(int id, Map<String, dynamic> body);
+  Future<void> deleteItem(int id);
+  Future<void> deleteCody(int id);
+  Future<void> deleteUserAccount();
+  Future<bool> toggleFavorite(int id);
 }

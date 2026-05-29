@@ -10,6 +10,9 @@ import 'package:ailook_flutter/presentation/pages/closet_edit/closet_edit_page.d
 import 'package:ailook_flutter/presentation/pages/cody_edit/cody_edit_page.dart';
 import 'package:ailook_flutter/presentation/pages/cody_edit/item_selection_page.dart';
 import 'package:ailook_flutter/presentation/pages/profile/profile_edit_page.dart';
+import 'package:ailook_flutter/presentation/pages/closet_detail/closet_detail_page.dart';
+import 'package:ailook_flutter/presentation/pages/cody_detail/cody_detail_page.dart';
+import 'package:ailook_flutter/presentation/pages/error/network_error_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -175,11 +178,28 @@ class ProfileEditRoute extends GoRouteData with $ProfileEditRoute {
   name: ClosetEditRoute.name,
 )
 class ClosetEditRoute extends GoRouteData with $ClosetEditRoute {
-  const ClosetEditRoute();
-  static const String path = '/closet/add';
-  static const String name = 'closet_add';
+  final int? id;
+  const ClosetEditRoute({this.id});
+  static const String path = '/closet/edit';
+  static const String name = 'closet_edit';
   @override
-  Widget build(BuildContext context, GoRouterState state) => const ClosetEditPage();
+  Widget build(BuildContext context, GoRouterState state) => ClosetEditPage(id: id);
+}
+
+///
+/// Closet Detail
+///
+@TypedGoRoute<ClosetDetailRoute>(
+  path: ClosetDetailRoute.path,
+  name: ClosetDetailRoute.name,
+)
+class ClosetDetailRoute extends GoRouteData with $ClosetDetailRoute {
+  final int id;
+  const ClosetDetailRoute({required this.id});
+  static const String path = '/closet/detail/:id';
+  static const String name = 'closet_detail';
+  @override
+  Widget build(BuildContext context, GoRouterState state) => ClosetDetailPage(id: id);
 }
 
 ///
@@ -190,11 +210,28 @@ class ClosetEditRoute extends GoRouteData with $ClosetEditRoute {
   name: CodyEditRoute.name,
 )
 class CodyEditRoute extends GoRouteData with $CodyEditRoute {
-  const CodyEditRoute();
-  static const String path = '/cody/add';
-  static const String name = 'cody_add';
+  final int? id;
+  const CodyEditRoute({this.id});
+  static const String path = '/cody/edit';
+  static const String name = 'cody_edit';
   @override
-  Widget build(BuildContext context, GoRouterState state) => const CodyEditPage();
+  Widget build(BuildContext context, GoRouterState state) => CodyEditPage(id: id);
+}
+
+///
+/// Cody Detail
+///
+@TypedGoRoute<CodyDetailRoute>(
+  path: CodyDetailRoute.path,
+  name: CodyDetailRoute.name,
+)
+class CodyDetailRoute extends GoRouteData with $CodyDetailRoute {
+  final int id;
+  const CodyDetailRoute({required this.id});
+  static const String path = '/cody/detail/:id';
+  static const String name = 'cody_detail';
+  @override
+  Widget build(BuildContext context, GoRouterState state) => CodyDetailPage(id: id);
 }
 
 ///
@@ -211,4 +248,18 @@ class ItemSelectionRoute extends GoRouteData with $ItemSelectionRoute {
   static const String name = 'item_selection';
   @override
   Widget build(BuildContext context, GoRouterState state) => ItemSelectionPage(category: category);
+}
+///
+/// Network Error
+///
+@TypedGoRoute<NetworkErrorRoute>(
+  path: NetworkErrorRoute.path,
+  name: NetworkErrorRoute.name,
+)
+class NetworkErrorRoute extends GoRouteData with $NetworkErrorRoute {
+  const NetworkErrorRoute();
+  static const String path = '/error/network';
+  static const String name = 'network_error';
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const NetworkErrorPage();
 }

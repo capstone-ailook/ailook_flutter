@@ -9,4 +9,8 @@ abstract interface class CodyRepository {
   Future<Result<ItemEntity>> updateItem(int id, Map<String, dynamic> body);
   Future<Result<CodyEntity>> createCody(Map<String, dynamic> body);
   Future<Result<CodyEntity>> updateCody(int id, Map<String, dynamic> body);
+  Future<Result<void>> deleteItem(int id);
+  Future<Result<void>> deleteCody(int id);
+  Future<Result<void>> deleteUserAccount();
+  Future<Result<bool>> toggleFavorite(int id);
 }

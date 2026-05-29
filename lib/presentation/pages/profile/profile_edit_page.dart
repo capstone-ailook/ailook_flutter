@@ -58,6 +58,42 @@ class ProfileEditPage extends BasePage {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Center(
+            child: GestureDetector(
+              onTap: ref.read(profileEditProvider.notifier).pickImage,
+              child: Stack(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.black12, width: 1),
+                    ),
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.grey[100],
+                      backgroundImage: state.pickedImage != null
+                          ? FileImage(state.pickedImage!)
+                          : (state.photoUrl != null ? NetworkImage(state.photoUrl!) as ImageProvider : null),
+                      child: (state.pickedImage == null && state.photoUrl == null)
+                          ? const Icon(Icons.person_rounded, size: 50, color: Colors.grey)
+                          : null,
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+                      child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 16),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
           _SectionTitle('Nickname'),
           TextField(
             controller: nicknameController,

@@ -4,6 +4,7 @@ import 'package:ailook_flutter/presentation/providers/chat/chat_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ChatPage extends HookConsumerWidget {
   const ChatPage({super.key});
@@ -43,6 +44,10 @@ class ChatPage extends HookConsumerWidget {
         elevation: 0,
         centerTitle: false,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.add_rounded, color: Colors.black, size: 28),
+            onPressed: () => selectedSessionId.value = null,
+          ),
           IconButton(
             icon: const Icon(Icons.history_rounded, color: Colors.black, size: 26),
             onPressed: () => _showHistorySheet(context, ref, selectedSessionId),
@@ -110,6 +115,39 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUser = message.role == 'user';
+    final isLoading = message.role == 'loading';
+
+    if (isLoading) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+              bottomLeft: Radius.circular(4),
+              bottomRight: Radius.circular(20),
+            ),
+          ),
+          child: const SizedBox(
+            width: 24,
+            height: 12,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _TypingDot(delay: 0),
+                _TypingDot(delay: 0.2),
+                _TypingDot(delay: 0.4),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -146,6 +184,50 @@ class _MessageBubble extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TypingDot extends StatefulWidget {
+  final double delay;
+  const _TypingDot({required this.delay});
+
+  @override
+  State<_TypingDot> createState() => _TypingDotState();
+}
+
+class _TypingDotState extends State<_TypingDot> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+    _animation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+
+    Future.delayed(Duration(milliseconds: (widget.delay * 1000).toInt()), () {
+      if (mounted) _controller.repeat(reverse: true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _animation,
+      child: Container(
+        width: 4,
+        height: 4,
+        decoration: const BoxDecoration(color: Colors.black38, shape: BoxShape.circle),
       ),
     );
   }
@@ -226,7 +308,7 @@ class _ChatInput extends ConsumerWidget {
               children: [
                 IconButton(
                   icon: const Icon(Icons.add_photo_alternate_outlined, color: Colors.black54, size: 24),
-                  onPressed: () => ref.read(chatImageProvider.notifier).pickImage(),
+                  onPressed: () => _showImageSourceDialog(context, ref),
                 ),
                 Expanded(
                   child: TextField(
@@ -269,6 +351,39 @@ class _ChatInput extends ConsumerWidget {
       ),
     );
   }
+
+  void _showImageSourceDialog(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('앨범에서 선택'),
+                onTap: () {
+                  Navigator.pop(context);
+                  ref.read(chatImageProvider.notifier).pickImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('카메라 촬영'),
+                onTap: () {
+                  Navigator.pop(context);
+                  ref.read(chatImageProvider.notifier).pickImage(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _ChatHistorySheet extends ConsumerWidget {
@@ -292,6 +407,13 @@ class _ChatHistorySheet extends ConsumerWidget {
             ),
           ),
           const Divider(),
+          // New Chat Tile
+          ListTile(
+            leading: const Icon(Icons.add_circle_outline_rounded, color: Colors.black87, size: 22),
+            title: const Text('Start New Chat', style: TextStyle(fontWeight: FontWeight.w600)),
+            onTap: () => Navigator.pop(context, null),
+          ),
+          const Divider(height: 1),
           sessionsState.when(
             data: (sessions) => sessions.isEmpty
                 ? const Center(child: Padding(padding: EdgeInsets.all(40), child: Text('No history yet')))
@@ -303,16 +425,42 @@ class _ChatHistorySheet extends ConsumerWidget {
                         final session = sessions[index];
                         return ListTile(
                           leading: const Icon(Icons.chat_bubble_outline_rounded, size: 20),
-                          title: Text(session.title ?? 'New Chat'),
-                          subtitle: Text(session.createdAt ?? ''),
+                          title: Text(session.title ?? 'New Chat', maxLines: 1, overflow: TextOverflow.ellipsis),
+                          subtitle: Text(session.createdAt?.split('T').first ?? ''),
                           onTap: () => Navigator.pop(context, session.id),
-                          trailing: const Icon(Icons.chevron_right_rounded),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                            onPressed: () => _showDeleteConfirmation(context, ref, session),
+                          ),
                         );
                       },
                     ),
                   ),
-            loading: () => const Center(child: CircularProgressIndicator(color: Colors.black)),
+            loading: () => const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(color: Colors.black))),
             error: (err, stack) => Center(child: Text('Error: $err')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, WidgetRef ref, ChatSessionEntity session) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Chat'),
+        content: Text('Are you sure you want to delete "${session.title ?? 'this chat'}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () {
+              ref.read(chatSessionListProvider.notifier).deleteSession(session.id);
+              Navigator.pop(context);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),

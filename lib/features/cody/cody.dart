@@ -4,6 +4,7 @@ import 'package:ailook_flutter/features/cody/data_source/remote/cody_remote_data
 import 'package:ailook_flutter/features/cody/repositories/cody_repository.dart';
 import 'package:ailook_flutter/features/cody/usecases/get_codies_use_case.dart';
 import 'package:ailook_flutter/features/cody/usecases/get_items_use_case.dart';
+import 'package:ailook_flutter/features/cody/usecases/toggle_favorite_use_case.dart';
 export 'package:ailook_flutter/core/modules/error_handling/result.dart';
 export 'package:ailook_flutter/core/modules/base_use_case/base_use_case.dart';
 export 'package:ailook_flutter/core/modules/base_use_case/base_no_param_use_case.dart';
@@ -18,8 +19,10 @@ export 'repositories/entities/item_entity.dart';
 export 'repositories/entities/cody_entity.dart';
 export 'usecases/get_items_use_case.dart';
 export 'usecases/get_codies_use_case.dart';
+export 'usecases/toggle_favorite_use_case.dart';
 
 final codyRemoteDataSource = locator<CodyRemoteDataSource>();
 final codyRepository = locator<CodyRepository>();
 final getItemsUseCase = locator<GetItemsUseCase>();
 final getCodiesUseCase = locator<GetCodiesUseCase>();
+final toggleFavoriteUseCase = locator<ToggleFavoriteUseCase>();

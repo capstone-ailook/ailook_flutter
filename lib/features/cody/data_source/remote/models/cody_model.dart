@@ -86,3 +86,15 @@ class CodyModel {
 
   Map<String, dynamic> toJson() => _$CodyModelToJson(this);
 }
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class CodyFavoriteResponse {
+  final bool isFavorite;
+
+  CodyFavoriteResponse({required this.isFavorite});
+
+  factory CodyFavoriteResponse.fromJson(Map<String, dynamic> json) =>
+      _$CodyFavoriteResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CodyFavoriteResponseToJson(this);
+}

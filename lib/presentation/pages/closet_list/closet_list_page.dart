@@ -185,7 +185,9 @@ class _ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return GestureDetector(
+      onTap: () => ClosetDetailRoute(id: item.id).push(context),
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
@@ -202,17 +204,44 @@ class _ItemCard extends StatelessWidget {
               ],
             ),
             clipBehavior: Clip.antiAlias,
-            child: item.imageUrl != null && item.imageUrl!.isNotEmpty
-                ? Image.network(
-                    item.imageUrl!,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: double.infinity,
-                    errorBuilder: (_, __, ___) => const Center(
-                      child: Icon(Icons.image_not_supported_rounded, color: Colors.grey),
+            child: Stack(
+              children: [
+                item.imageUrl != null && item.imageUrl!.isNotEmpty
+                    ? Positioned.fill(
+                        child: Image.network(
+                          item.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Center(
+                            child: Icon(Icons.image_not_supported_rounded, color: Colors.grey),
+                          ),
+                        ),
+                      )
+                    : const Center(child: Icon(Icons.image_rounded, color: Colors.grey, size: 32)),
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2)),
+                      ],
                     ),
-                  )
-                : const Center(child: Icon(Icons.image_rounded, color: Colors.grey, size: 32)),
+                    child: Text(
+                      (item.category as String).toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         Padding(
@@ -243,6 +272,7 @@ class _ItemCard extends StatelessWidget {
             ),
           ),
       ],
+    ),
     );
   }
 }

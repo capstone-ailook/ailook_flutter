@@ -33,7 +33,7 @@ final class CodyListProvider
   CodyList create() => CodyList();
 }
 
-String _$codyListHash() => r'9964fa37130671d99ecc15c884524ac7368f8498';
+String _$codyListHash() => r'051e987e1a9ca4dbfb3323f59d5f68e5de53c4d8';
 
 abstract class _$CodyList extends $AsyncNotifier<CodyListState> {
   FutureOr<CodyListState> build();

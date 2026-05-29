@@ -32,4 +32,20 @@ abstract class CodyAPI {
   @PATCH("/codies/{id}/")
   @Headers({"requiresToken": true})
   Future<CodyModel> updateCody(@Path("id") int id, @Body() Map<String, dynamic> body);
+
+  @DELETE("/items/{id}/")
+  @Headers({"requiresToken": true})
+  Future<void> deleteItem(@Path("id") int id);
+
+  @DELETE("/codies/{id}/")
+  @Headers({"requiresToken": true})
+  Future<void> deleteCody(@Path("id") int id);
+
+  @DELETE("/user/profile/")
+  @Headers({"requiresToken": true})
+  Future<void> deleteUserAccount();
+
+  @POST("/codies/{id}/toggle_favorite/")
+  @Headers({"requiresToken": true})
+  Future<CodyFavoriteResponse> toggleFavorite(@Path("id") int id);
 }

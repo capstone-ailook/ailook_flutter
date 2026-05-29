@@ -81,4 +81,13 @@ final class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     await _googleSignIn.signOut();
     return _firebaseAuth.signOut();
   }
+
+  @override
+  Future<void> deleteAccount() async {
+    final user = _firebaseAuth.currentUser;
+    if (user != null) {
+      await _googleSignIn.signOut();
+      await user.delete();
+    }
+  }
 }

@@ -1,17 +1,40 @@
 import 'package:ailook_flutter/presentation/providers/closet/closet_edit_provider.dart';
+import 'package:ailook_flutter/presentation/providers/closet/closet_list_provider.dart';
 import 'package:ailook_flutter/app/style/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ClosetEditPage extends HookConsumerWidget {
-  const ClosetEditPage({super.key});
+  final int? id;
+  const ClosetEditPage({super.key, this.id});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(closetEditProvider);
     final notifier = ref.read(closetEditProvider.notifier);
+    
+    final nameController = useTextEditingController(text: state.name);
+    final kindController = useTextEditingController(text: state.kind);
     final tagController = useTextEditingController();
+
+    useEffect(() {
+      if (id != null) {
+        Future.microtask(() {
+          final closetState = ref.read(closetListProvider);
+          closetState.whenData((s) {
+            final item = s.allItems.firstWhere((e) => e.id == id);
+            notifier.initWithItem(item);
+            nameController.text = item.name;
+            kindController.text = item.kind ?? '';
+          });
+        });
+      } else {
+        Future.microtask(() => ref.invalidate(closetEditProvider));
+      }
+      return null;
+    }, [id]);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -20,9 +43,9 @@ class ClosetEditPage extends HookConsumerWidget {
           icon: const Icon(Icons.close, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'ADD ITEM',
-          style: TextStyle(
+        title: Text(
+          id != null ? 'EDIT ITEM' : 'ADD ITEM',
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.w800,
@@ -35,8 +58,9 @@ class ClosetEditPage extends HookConsumerWidget {
         actions: [
           TextButton(
             onPressed: state.isLoading ? null : () async {
-              final success = await notifier.save();
+              final success = await notifier.save(id: id);
               if (success && context.mounted) {
+                ref.read(closetListProvider.notifier).refresh();
                 Navigator.pop(context, true);
               }
             },
@@ -61,7 +85,7 @@ class ClosetEditPage extends HookConsumerWidget {
               children: [
                 // Image Picker Area
                 GestureDetector(
-                  onTap: state.isLoading ? null : notifier.pickImage,
+                  onTap: state.isLoading ? null : () => _showImageSourceDialog(context, notifier),
                   child: Container(
                     height: 240,
                     width: double.infinity,
@@ -75,17 +99,22 @@ class ClosetEditPage extends HookConsumerWidget {
                             borderRadius: BorderRadius.circular(23),
                             child: Image.file(state.pickedImage!, fit: BoxFit.cover),
                           )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add_a_photo_outlined, size: 48, color: Colors.grey[400]),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Tap to add a photo',
-                                style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w500),
+                        : (state.imageUrl != null && state.imageUrl!.isNotEmpty)
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(23),
+                                child: Image.network(state.imageUrl!, fit: BoxFit.cover),
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add_a_photo_outlined, size: 48, color: Colors.grey[400]),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Tap to add a photo',
+                                    style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w500),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -94,6 +123,7 @@ class ClosetEditPage extends HookConsumerWidget {
                 const Text('Item Name', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 const SizedBox(height: 12),
                 TextField(
+                  controller: nameController,
                   onChanged: notifier.updateName,
                   decoration: InputDecoration(
                     hintText: 'e.g. White Cotton T-Shirt',
@@ -116,10 +146,10 @@ class ClosetEditPage extends HookConsumerWidget {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      _CategoryChip(label: 'TOP', value: 'top', isSelected: state.category == 'top', onTap: notifier.updateCategory),
-                      _CategoryChip(label: 'BOTTOM', value: 'bottom', isSelected: state.category == 'bottom', onTap: notifier.updateCategory),
-                      _CategoryChip(label: 'SHOES', value: 'shoes', isSelected: state.category == 'shoes', onTap: notifier.updateCategory),
-                      _CategoryChip(label: 'ACCESSORY', value: 'accessory', isSelected: state.category == 'accessory', onTap: notifier.updateCategory),
+                      _CategoryChip(label: 'TOP', value: 'top', isSelected: state.category == 'top', onTap: id != null ? null : notifier.updateCategory),
+                      _CategoryChip(label: 'BOTTOM', value: 'bottom', isSelected: state.category == 'bottom', onTap: id != null ? null : notifier.updateCategory),
+                      _CategoryChip(label: 'SHOES', value: 'shoes', isSelected: state.category == 'shoes', onTap: id != null ? null : notifier.updateCategory),
+                      _CategoryChip(label: 'ACCESSORY', value: 'accessory', isSelected: state.category == 'accessory', onTap: id != null ? null : notifier.updateCategory),
                     ],
                   ),
                 ),
@@ -129,6 +159,7 @@ class ClosetEditPage extends HookConsumerWidget {
                 const Text('Kind', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 const SizedBox(height: 12),
                 TextField(
+                  controller: kindController,
                   onChanged: notifier.updateKind,
                   decoration: InputDecoration(
                     hintText: 'e.g. Tee, Jeans, Hoodie',
@@ -202,25 +233,59 @@ class ClosetEditPage extends HookConsumerWidget {
       ),
     );
   }
+
+  void _showImageSourceDialog(BuildContext context, ClosetEdit notifier) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('앨범에서 선택'),
+                onTap: () {
+                  Navigator.pop(context);
+                  notifier.pickImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('카메라 촬영'),
+                onTap: () {
+                  Navigator.pop(context);
+                  notifier.pickImage(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _CategoryChip extends StatelessWidget {
   final String label;
   final String value;
   final bool isSelected;
-  final Function(String) onTap;
+  final Function(String)? onTap;
 
   const _CategoryChip({
     required this.label,
     required this.value,
     required this.isSelected,
-    required this.onTap,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bool enabled = onTap != null;
     return GestureDetector(
-      onTap: () => onTap(value),
+      onTap: enabled ? () => onTap!(value) : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(right: 12),
@@ -230,15 +295,19 @@ class _CategoryChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: isSelected ? Colors.black : Colors.grey[200]!),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.black,
-            fontWeight: FontWeight.w700,
-            fontSize: 13,
+        child: Opacity(
+          opacity: (enabled || isSelected) ? 1.0 : 0.4,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : Colors.black,
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+            ),
           ),
         ),
       ),
     );
   }
 }
+

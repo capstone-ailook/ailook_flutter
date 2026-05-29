@@ -13,8 +13,11 @@ List<RouteBase> get $appRoutes => [
       $mainShellRoute,
       $profileEditRoute,
       $closetEditRoute,
+      $closetDetailRoute,
       $codyEditRoute,
+      $codyDetailRoute,
       $itemSelectionRoute,
+      $networkErrorRoute,
     ];
 
 RouteBase get $splashRoute => GoRouteData.$route(
@@ -267,18 +270,65 @@ mixin $ProfileEditRoute on GoRouteData {
 }
 
 RouteBase get $closetEditRoute => GoRouteData.$route(
-      path: '/closet/add',
-      name: 'closet_add',
+      path: '/closet/edit',
+      name: 'closet_edit',
       factory: $ClosetEditRoute._fromState,
     );
 
 mixin $ClosetEditRoute on GoRouteData {
-  static ClosetEditRoute _fromState(GoRouterState state) =>
-      const ClosetEditRoute();
+  static ClosetEditRoute _fromState(GoRouterState state) => ClosetEditRoute(
+        id: _$convertMapValue('id', state.uri.queryParameters, int.tryParse),
+      );
+
+  ClosetEditRoute get _self => this as ClosetEditRoute;
 
   @override
   String get location => GoRouteData.$location(
-        '/closet/add',
+        '/closet/edit',
+        queryParams: {
+          if (_self.id != null) 'id': _self.id!.toString(),
+        },
+      );
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+T? _$convertMapValue<T>(
+  String key,
+  Map<String, String> map,
+  T? Function(String) converter,
+) {
+  final value = map[key];
+  return value == null ? null : converter(value);
+}
+
+RouteBase get $closetDetailRoute => GoRouteData.$route(
+      path: '/closet/detail/:id',
+      name: 'closet_detail',
+      factory: $ClosetDetailRoute._fromState,
+    );
+
+mixin $ClosetDetailRoute on GoRouteData {
+  static ClosetDetailRoute _fromState(GoRouterState state) => ClosetDetailRoute(
+        id: int.parse(state.pathParameters['id']!),
+      );
+
+  ClosetDetailRoute get _self => this as ClosetDetailRoute;
+
+  @override
+  String get location => GoRouteData.$location(
+        '/closet/detail/${Uri.encodeComponent(_self.id.toString())}',
       );
 
   @override
@@ -296,17 +346,56 @@ mixin $ClosetEditRoute on GoRouteData {
 }
 
 RouteBase get $codyEditRoute => GoRouteData.$route(
-      path: '/cody/add',
-      name: 'cody_add',
+      path: '/cody/edit',
+      name: 'cody_edit',
       factory: $CodyEditRoute._fromState,
     );
 
 mixin $CodyEditRoute on GoRouteData {
-  static CodyEditRoute _fromState(GoRouterState state) => const CodyEditRoute();
+  static CodyEditRoute _fromState(GoRouterState state) => CodyEditRoute(
+        id: _$convertMapValue('id', state.uri.queryParameters, int.tryParse),
+      );
+
+  CodyEditRoute get _self => this as CodyEditRoute;
 
   @override
   String get location => GoRouteData.$location(
-        '/cody/add',
+        '/cody/edit',
+        queryParams: {
+          if (_self.id != null) 'id': _self.id!.toString(),
+        },
+      );
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $codyDetailRoute => GoRouteData.$route(
+      path: '/cody/detail/:id',
+      name: 'cody_detail',
+      factory: $CodyDetailRoute._fromState,
+    );
+
+mixin $CodyDetailRoute on GoRouteData {
+  static CodyDetailRoute _fromState(GoRouterState state) => CodyDetailRoute(
+        id: int.parse(state.pathParameters['id']!),
+      );
+
+  CodyDetailRoute get _self => this as CodyDetailRoute;
+
+  @override
+  String get location => GoRouteData.$location(
+        '/cody/detail/${Uri.encodeComponent(_self.id.toString())}',
       );
 
   @override
@@ -340,6 +429,35 @@ mixin $ItemSelectionRoute on GoRouteData {
   @override
   String get location => GoRouteData.$location(
         '/closet/select/${Uri.encodeComponent(_self.category)}',
+      );
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $networkErrorRoute => GoRouteData.$route(
+      path: '/error/network',
+      name: 'network_error',
+      factory: $NetworkErrorRoute._fromState,
+    );
+
+mixin $NetworkErrorRoute on GoRouteData {
+  static NetworkErrorRoute _fromState(GoRouterState state) =>
+      const NetworkErrorRoute();
+
+  @override
+  String get location => GoRouteData.$location(
+        '/error/network',
       );
 
   @override

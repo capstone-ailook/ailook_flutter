@@ -40,4 +40,25 @@ final class CodyRemoteDataSourceImpl implements CodyRemoteDataSource {
   Future<CodyModel> updateCody(int id, Map<String, dynamic> body) {
     return _codyAPI.updateCody(id, body);
   }
+
+  @override
+  Future<void> deleteItem(int id) {
+    return _codyAPI.deleteItem(id);
+  }
+
+  @override
+  Future<void> deleteCody(int id) {
+    return _codyAPI.deleteCody(id);
+  }
+
+  @override
+  Future<void> deleteUserAccount() {
+    return _codyAPI.deleteUserAccount();
+  }
+
+  @override
+  Future<bool> toggleFavorite(int id) async {
+    final response = await _codyAPI.toggleFavorite(id);
+    return response.isFavorite;
+  }
 }

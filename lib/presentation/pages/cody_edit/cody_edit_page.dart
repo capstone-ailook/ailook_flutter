@@ -1,18 +1,41 @@
 import 'package:ailook_flutter/features/cody/cody.dart';
 import 'package:ailook_flutter/presentation/pages/cody_edit/item_selection_page.dart';
 import 'package:ailook_flutter/presentation/providers/cody/cody_edit_provider.dart';
+import 'package:ailook_flutter/presentation/providers/cody/cody_list_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CodyEditPage extends HookConsumerWidget {
-  const CodyEditPage({super.key});
+  final int? id;
+  const CodyEditPage({super.key, this.id});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(codyEditProvider);
     final notifier = ref.read(codyEditProvider.notifier);
+    
+    final nameController = useTextEditingController(text: state.name);
+    final descController = useTextEditingController(text: state.description);
     final tagController = useTextEditingController();
+
+    useEffect(() {
+      if (id != null) {
+        Future.microtask(() {
+          final codyListState = ref.read(codyListProvider);
+          codyListState.whenData((s) {
+            final cody = s.allCodies.firstWhere((e) => e.id == id);
+            notifier.initWithCody(cody);
+            nameController.text = cody.name ?? '';
+            descController.text = cody.description ?? '';
+          });
+        });
+      } else {
+        Future.microtask(() => ref.invalidate(codyEditProvider));
+      }
+      return null;
+    }, [id]);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -21,9 +44,9 @@ class CodyEditPage extends HookConsumerWidget {
           icon: const Icon(Icons.close, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'CREATE CODY',
-          style: TextStyle(
+        title: Text(
+          id != null ? 'EDIT CODY' : 'CREATE CODY',
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.w800,
@@ -36,8 +59,9 @@ class CodyEditPage extends HookConsumerWidget {
         actions: [
           TextButton(
             onPressed: state.isLoading ? null : () async {
-              final success = await notifier.save();
+              final success = await notifier.save(id: id);
               if (success && context.mounted) {
+                ref.read(codyListProvider.notifier).refresh();
                 Navigator.pop(context, true);
               }
             },
@@ -71,10 +95,10 @@ class CodyEditPage extends HookConsumerWidget {
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                   children: [
-                    _ItemSlot(label: 'TOP', item: state.top, onSelect: () => _openItemSelector(context, 'top', notifier)),
-                    _ItemSlot(label: 'BOTTOM', item: state.bottom, onSelect: () => _openItemSelector(context, 'bottom', notifier)),
-                    _ItemSlot(label: 'SHOES', item: state.shoes, onSelect: () => _openItemSelector(context, 'shoes', notifier)),
-                    _ItemSlot(label: 'ACCESSORY', item: state.accessory, onSelect: () => _openItemSelector(context, 'accessory', notifier)),
+                    _ItemSlot(label: 'TOP', item: state.top, onSelect: () => _openItemSelector(context, 'top', notifier), onClear: () => notifier.clearItem('top')),
+                    _ItemSlot(label: 'BOTTOM', item: state.bottom, onSelect: () => _openItemSelector(context, 'bottom', notifier), onClear: () => notifier.clearItem('bottom')),
+                    _ItemSlot(label: 'SHOES', item: state.shoes, onSelect: () => _openItemSelector(context, 'shoes', notifier), onClear: () => notifier.clearItem('shoes')),
+                    _ItemSlot(label: 'ACCESSORY', item: state.accessory, onSelect: () => _openItemSelector(context, 'accessory', notifier), onClear: () => notifier.clearItem('accessory')),
                   ],
                 ),
                 const SizedBox(height: 40),
@@ -83,6 +107,7 @@ class CodyEditPage extends HookConsumerWidget {
                 const Text('Cody Info', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
                 const SizedBox(height: 20),
                 TextField(
+                  controller: nameController,
                   onChanged: notifier.updateName,
                   decoration: InputDecoration(
                     hintText: 'Cody Name *',
@@ -94,6 +119,7 @@ class CodyEditPage extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 TextField(
+                  controller: descController,
                   onChanged: notifier.updateDescription,
                   maxLines: 2,
                   decoration: InputDecoration(
@@ -110,7 +136,7 @@ class CodyEditPage extends HookConsumerWidget {
                 const Text('Preview Image', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 const SizedBox(height: 12),
                 GestureDetector(
-                  onTap: notifier.pickImage,
+                  onTap: () => _showImageSourceDialog(context, notifier),
                   child: Container(
                     height: 160,
                     width: double.infinity,
@@ -121,14 +147,16 @@ class CodyEditPage extends HookConsumerWidget {
                     ),
                     child: state.pickedImage != null
                         ? ClipRRect(borderRadius: BorderRadius.circular(19), child: Image.file(state.pickedImage!, fit: BoxFit.cover))
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add_photo_alternate_outlined, color: Colors.grey[400], size: 32),
-                              const SizedBox(height: 8),
-                              const Text('Add preview image (Optional)', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                            ],
-                          ),
+                        : (state.imageUrl != null && state.imageUrl!.isNotEmpty)
+                            ? ClipRRect(borderRadius: BorderRadius.circular(19), child: Image.network(state.imageUrl!, fit: BoxFit.cover))
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add_photo_alternate_outlined, color: Colors.grey[400], size: 32),
+                                  const SizedBox(height: 8),
+                                  const Text('Add preview image (Optional)', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                ],
+                              ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -201,14 +229,48 @@ class CodyEditPage extends HookConsumerWidget {
       notifier.setItem(category, selectedItem);
     }
   }
+
+  void _showImageSourceDialog(BuildContext context, CodyEdit notifier) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('앨범에서 선택'),
+                onTap: () {
+                  Navigator.pop(context);
+                  notifier.pickImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('카메라 촬영'),
+                onTap: () {
+                  Navigator.pop(context);
+                  notifier.pickImage(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _ItemSlot extends StatelessWidget {
   final String label;
   final ItemEntity? item;
   final VoidCallback onSelect;
+  final VoidCallback onClear;
 
-  const _ItemSlot({required this.label, this.item, required this.onSelect});
+  const _ItemSlot({required this.label, this.item, required this.onSelect, required this.onClear});
 
   @override
   Widget build(BuildContext context) {
@@ -229,6 +291,20 @@ class _ItemSlot extends StatelessWidget {
                     child: item!.imageUrl != null
                         ? Image.network(item!.imageUrl!, fit: BoxFit.cover)
                         : const Center(child: Icon(Icons.image_outlined)),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: () {
+                         onClear();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                        child: const Icon(Icons.close_rounded, color: Colors.white, size: 16),
+                      ),
+                    ),
                   ),
                   Positioned(
                     bottom: 8, left: 8, right: 8,

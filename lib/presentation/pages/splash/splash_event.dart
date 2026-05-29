@@ -16,15 +16,18 @@ mixin class SplashEvent {
       return;
     }
 
-    await ref.read(userInfoProvider.future).then(
-      (userData) {
-        if (userData == null || !userData.exists) {
-          const OnboardingRoute().go(context);
-        } else {
-          CodyListRoute().go(context);
-        }
-      },
-    );
+    try {
+      final userData = await ref.read(userInfoProvider.future);
+      if (userData == null || !userData.exists) {
+        const OnboardingRoute().go(context);
+      } else {
+        CodyListRoute().go(context);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        const NetworkErrorRoute().go(context);
+      }
+    }
   }
 }
 

@@ -12,11 +12,13 @@ class CodyListPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final codyListState = ref.watch(codyListProvider);
     final searchController = useTextEditingController();
-    final showFavoritesOnly = useState(false);
+    
+    // Derive filter state directly from provider to ensure synchronization
+    final showFavoritesOnly = codyListState.value?.lastShowFavoritesOnly ?? false;
 
     useEffect(() {
       void listener() {
-        ref.read(codyListProvider.notifier).filter(searchController.text, showFavoritesOnly.value);
+        ref.read(codyListProvider.notifier).filter(searchController.text, showFavoritesOnly);
       }
       searchController.addListener(listener);
       return () => searchController.removeListener(listener);
@@ -80,14 +82,14 @@ class CodyListPage extends HookConsumerWidget {
               children: [
                 _FilterChip(
                   label: 'All',
-                  isSelected: !showFavoritesOnly.value,
-                  onTap: () => showFavoritesOnly.value = false,
+                  isSelected: !showFavoritesOnly,
+                  onTap: () => ref.read(codyListProvider.notifier).filter(searchController.text, false),
                 ),
                 const SizedBox(width: 8),
                 _FilterChip(
                   label: 'Favorites',
-                  isSelected: showFavoritesOnly.value,
-                  onTap: () => showFavoritesOnly.value = true,
+                  isSelected: showFavoritesOnly,
+                  onTap: () => ref.read(codyListProvider.notifier).filter(searchController.text, true),
                 ),
               ],
             ),
@@ -99,7 +101,7 @@ class CodyListPage extends HookConsumerWidget {
               data: (state) => state.filteredCodies.isEmpty
                   ? _EmptyState(
                       isSearching: searchController.text.isNotEmpty,
-                      isFavorites: showFavoritesOnly.value,
+                      isFavorites: showFavoritesOnly,
                     )
                   : RefreshIndicator(
                       onRefresh: () => ref.read(codyListProvider.notifier).refresh(),
@@ -179,14 +181,16 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _CodyCard extends StatelessWidget {
+class _CodyCard extends ConsumerWidget {
   final CodyEntity cody;
 
   const _CodyCard({required this.cody});
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: () => CodyDetailRoute(id: cody.id).push(context),
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
@@ -232,7 +236,7 @@ class _CodyCard extends StatelessWidget {
                       size: 20,
                     ),
                     onPressed: () {
-                      // TODO: Toggle favorite
+                      ref.read(codyListProvider.notifier).toggleFavorite(cody.id);
                     },
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -270,6 +274,7 @@ class _CodyCard extends StatelessWidget {
             ),
           ),
       ],
+    ),
     );
   }
 }

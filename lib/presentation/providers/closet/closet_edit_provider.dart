@@ -4,6 +4,7 @@ import 'package:ailook_flutter/features/cody/cody.dart';
 import 'package:ailook_flutter/features/media/repositories/media_repository.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:dio/dio.dart';
 
 part 'closet_edit_provider.g.dart';
 
@@ -55,13 +56,24 @@ class ClosetEditState {
   }
 }
 
-@Riverpod()
+@riverpod
 class ClosetEdit extends _$ClosetEdit {
   final ImagePicker _picker = ImagePicker();
 
   @override
   ClosetEditState build() {
     return ClosetEditState();
+  }
+
+  void initWithItem(ItemEntity item) {
+    state = ClosetEditState(
+      name: item.name,
+      category: item.category,
+      kind: item.kind ?? '',
+      description: item.description ?? '',
+      tags: item.tags ?? [],
+      imageUrl: item.imageUrl,
+    );
   }
 
   void updateName(String name) => state = state.copyWith(name: name);
@@ -80,14 +92,14 @@ class ClosetEdit extends _$ClosetEdit {
     state = state.copyWith(tags: state.tags.where((t) => t != tag).toList());
   }
 
-  Future<void> pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 1080);
+  Future<void> pickImage(ImageSource source) async {
+    final XFile? image = await _picker.pickImage(source: source, maxWidth: 1080);
     if (image != null) {
       state = state.copyWith(pickedImage: File(image.path));
     }
   }
 
-  Future<bool> save() async {
+  Future<bool> save({int? id}) async {
     if (state.name.isEmpty) {
       state = state.copyWith(error: 'Please enter a name');
       return false;
@@ -98,7 +110,6 @@ class ClosetEdit extends _$ClosetEdit {
     try {
       String? finalUrl = state.imageUrl;
       
-      // 1. Upload image if picked
       if (state.pickedImage != null) {
         final mediaRepo = locator<MediaRepository>();
         final uploadResult = await mediaRepo.uploadImage(state.pickedImage!);
@@ -114,7 +125,6 @@ class ClosetEdit extends _$ClosetEdit {
         if (finalUrl == null) return false;
       }
 
-      // 2. Save Item metadata
       final body = {
         'name': state.name,
         'category': state.category,
@@ -125,7 +135,13 @@ class ClosetEdit extends _$ClosetEdit {
       };
 
       final codyRepo = locator<CodyRepository>();
-      final saveResult = await codyRepo.createItem(body);
+      final Result<ItemEntity> saveResult;
+      
+      if (id != null) {
+        saveResult = await codyRepo.updateItem(id, body);
+      } else {
+        saveResult = await codyRepo.createItem(body);
+      }
 
       return saveResult.fold(
         onSuccess: (item) {
@@ -133,7 +149,36 @@ class ClosetEdit extends _$ClosetEdit {
           return true;
         },
         onFailure: (e) {
-          state = state.copyWith(isLoading: false, error: 'Save failed: $e');
+          String errorMessage = 'Save failed: $e';
+          if (e is DioException && e.response?.data is Map) {
+            final errors = e.response!.data as Map;
+            if (errors.isNotEmpty) {
+              errorMessage = errors.entries.map((entry) => '${entry.key}: ${entry.value}').join('\n');
+            }
+          }
+          state = state.copyWith(isLoading: false, error: errorMessage);
+          return false;
+        },
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> delete(int id) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final codyRepo = locator<CodyRepository>();
+      final result = await codyRepo.deleteItem(id);
+      
+      return result.fold(
+        onSuccess: (_) {
+          state = state.copyWith(isLoading: false);
+          return true;
+        },
+        onFailure: (e) {
+          state = state.copyWith(isLoading: false, error: 'Delete failed: $e');
           return false;
         },
       );

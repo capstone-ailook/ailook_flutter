@@ -104,11 +104,37 @@ class ProfilePage extends ConsumerWidget {
               _ActionTile(
                 icon: Icons.logout_rounded,
                 label: 'Sign Out',
-                isDestructive: true,
                 onTap: () async {
                   await ref.read(userAuthProvider.notifier).signOut();
                   if (context.mounted) {
                     const SignInRoute().go(context);
+                  }
+                },
+              ),
+              _ActionTile(
+                icon: Icons.person_remove_rounded,
+                label: 'Delete Account',
+                isDestructive: true,
+                onTap: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Delete Account'),
+                      content: const Text('Are you sure you want to delete your account? This action cannot be undone.'),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true) {
+                    await ref.read(userAuthProvider.notifier).deleteAccount();
+                    if (context.mounted) {
+                      const SignInRoute().go(context);
+                    }
                   }
                 },
               ),

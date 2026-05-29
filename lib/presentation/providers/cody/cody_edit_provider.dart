@@ -4,6 +4,7 @@ import 'package:ailook_flutter/features/cody/cody.dart';
 import 'package:ailook_flutter/features/media/repositories/media_repository.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:dio/dio.dart';
 
 part 'cody_edit_provider.g.dart';
 
@@ -39,9 +40,13 @@ class CodyEditState {
     String? description,
     List<String>? tags,
     ItemEntity? top,
+    bool clearTop = false,
     ItemEntity? bottom,
+    bool clearBottom = false,
     ItemEntity? shoes,
+    bool clearShoes = false,
     ItemEntity? accessory,
+    bool clearAccessory = false,
     File? pickedImage,
     String? imageUrl,
     bool? isLoading,
@@ -51,10 +56,10 @@ class CodyEditState {
       name: name ?? this.name,
       description: description ?? this.description,
       tags: tags ?? this.tags,
-      top: top ?? this.top,
-      bottom: bottom ?? this.bottom,
-      shoes: shoes ?? this.shoes,
-      accessory: accessory ?? this.accessory,
+      top: clearTop ? null : (top ?? this.top),
+      bottom: clearBottom ? null : (bottom ?? this.bottom),
+      shoes: clearShoes ? null : (shoes ?? this.shoes),
+      accessory: clearAccessory ? null : (accessory ?? this.accessory),
       pickedImage: pickedImage ?? this.pickedImage,
       imageUrl: imageUrl ?? this.imageUrl,
       isLoading: isLoading ?? this.isLoading,
@@ -63,13 +68,26 @@ class CodyEditState {
   }
 }
 
-@Riverpod()
+@riverpod
 class CodyEdit extends _$CodyEdit {
   final ImagePicker _picker = ImagePicker();
 
   @override
   CodyEditState build() {
     return CodyEditState();
+  }
+
+  void initWithCody(CodyEntity cody) {
+    state = CodyEditState(
+      name: cody.name ?? '',
+      description: cody.description ?? '',
+      tags: cody.tags ?? [],
+      top: cody.top,
+      bottom: cody.bottom,
+      shoes: cody.shoes,
+      accessory: cody.accessory,
+      imageUrl: cody.imageUrl,
+    );
   }
 
   void updateName(String name) => state = state.copyWith(name: name);
@@ -103,14 +121,31 @@ class CodyEdit extends _$CodyEdit {
     }
   }
 
-  Future<void> pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 1080);
+  void clearItem(String category) {
+    switch (category.toLowerCase()) {
+      case 'top':
+        state = state.copyWith(clearTop: true);
+        break;
+      case 'bottom':
+        state = state.copyWith(clearBottom: true);
+        break;
+      case 'shoes':
+        state = state.copyWith(clearShoes: true);
+        break;
+      case 'accessory':
+        state = state.copyWith(clearAccessory: true);
+        break;
+    }
+  }
+
+  Future<void> pickImage(ImageSource source) async {
+    final XFile? image = await _picker.pickImage(source: source, maxWidth: 1080);
     if (image != null) {
       state = state.copyWith(pickedImage: File(image.path));
     }
   }
 
-  Future<bool> save() async {
+  Future<bool> save({int? id}) async {
     if (state.name.isEmpty) {
       state = state.copyWith(error: 'Please enter a name');
       return false;
@@ -121,7 +156,6 @@ class CodyEdit extends _$CodyEdit {
     try {
       String? finalUrl = state.imageUrl;
       
-      // 1. Upload image if picked
       if (state.pickedImage != null) {
         final mediaRepo = locator<MediaRepository>();
         final uploadResult = await mediaRepo.uploadImage(state.pickedImage!);
@@ -137,7 +171,6 @@ class CodyEdit extends _$CodyEdit {
         if (finalUrl == null) return false;
       }
 
-      // 2. Save Cody metadata
       final body = {
         'name': state.name,
         'description': state.description,
@@ -150,7 +183,13 @@ class CodyEdit extends _$CodyEdit {
       };
 
       final codyRepo = locator<CodyRepository>();
-      final saveResult = await codyRepo.createCody(body);
+      final Result<CodyEntity> saveResult;
+      
+      if (id != null) {
+        saveResult = await codyRepo.updateCody(id, body);
+      } else {
+        saveResult = await codyRepo.createCody(body);
+      }
 
       return saveResult.fold(
         onSuccess: (cody) {
@@ -158,7 +197,36 @@ class CodyEdit extends _$CodyEdit {
           return true;
         },
         onFailure: (e) {
-          state = state.copyWith(isLoading: false, error: 'Save failed: $e');
+          String errorMessage = 'Save failed: $e';
+          if (e is DioException && e.response?.data is Map) {
+            final errors = e.response!.data as Map;
+            if (errors.isNotEmpty) {
+              errorMessage = errors.entries.map((entry) => '${entry.key}: ${entry.value}').join('\n');
+            }
+          }
+          state = state.copyWith(isLoading: false, error: errorMessage);
+          return false;
+        },
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> delete(int id) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final codyRepo = locator<CodyRepository>();
+      final result = await codyRepo.deleteCody(id);
+      
+      return result.fold(
+        onSuccess: (_) {
+          state = state.copyWith(isLoading: false);
+          return true;
+        },
+        onFailure: (e) {
+          state = state.copyWith(isLoading: false, error: 'Delete failed: $e');
           return false;
         },
       );

@@ -26,9 +26,9 @@ class ChatImage extends _$ChatImage {
   @override
   String? build() => null;
 
-  Future<void> pickImage() async {
+  Future<void> pickImage(ImageSource source) async {
     final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
+    final image = await picker.pickImage(source: source);
     if (image != null) {
       state = image.path;
     }
@@ -114,9 +114,10 @@ class ChatMessages extends _$ChatMessages {
   Future<void> _sendToSession(int id, String text, {String? imageUrl}) async {
     final previousMessages = state.asData?.value ?? [];
     
-    // Optimistic update
+    // Optimistic update: Add user message and a temporary loading message
     final userMessage = ChatMessageEntity(role: 'user', text: text, imageUrl: imageUrl);
-    state = AsyncData([...previousMessages, userMessage]);
+    final loadingMessage = const ChatMessageEntity(role: 'loading', text: '');
+    state = AsyncData([...previousMessages, userMessage, loadingMessage]);
 
     final result = await ref.read(chatRepositoryProvider).sendMessage(id, text, imageUrl: imageUrl);
     

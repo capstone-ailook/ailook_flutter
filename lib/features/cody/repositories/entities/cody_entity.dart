@@ -84,4 +84,44 @@ class CodyEntity {
       updatedAt: DateTime.parse(model.updatedAt),
     );
   }
+
+  CodyEntity copyWith({
+    int? id,
+    int? user,
+    String? name,
+    String? description,
+    String? imageUrl,
+    List<String>? tags,
+    int? topId,
+    int? bottomId,
+    int? shoesId,
+    int? accessoryId,
+    ItemEntity? top,
+    ItemEntity? bottom,
+    ItemEntity? shoes,
+    ItemEntity? accessory,
+    bool? isFavorite,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return CodyEntity(
+      id: id ?? this.id,
+      user: user ?? this.user,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      tags: tags ?? this.tags,
+      topId: topId ?? this.topId,
+      bottomId: bottomId ?? this.bottomId,
+      shoesId: shoesId ?? this.shoesId,
+      accessoryId: accessoryId ?? this.accessoryId,
+      top: top ?? this.top,
+      bottom: bottom ?? this.bottom,
+      shoes: shoes ?? this.shoes,
+      accessory: accessory ?? this.accessory,
+      isFavorite: isFavorite ?? this.isFavorite,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

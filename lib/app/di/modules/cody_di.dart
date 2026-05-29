@@ -31,6 +31,11 @@ final class CodyDependencyInjection extends FeatureDependencyInjection {
         () => GetCodiesUseCase(
           codyRepository,
         ),
+      )
+      ..registerFactory(
+        () => ToggleFavoriteUseCase(
+          codyRepository,
+        ),
       );
   }
 }

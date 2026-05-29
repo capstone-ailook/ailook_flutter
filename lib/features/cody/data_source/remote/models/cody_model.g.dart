@@ -54,3 +54,15 @@ Map<String, dynamic> _$CodyModelToJson(CodyModel instance) => <String, dynamic>{
       'created_at': instance.createdAt,
       'updated_at': instance.updatedAt,
     };
+
+CodyFavoriteResponse _$CodyFavoriteResponseFromJson(
+        Map<String, dynamic> json) =>
+    CodyFavoriteResponse(
+      isFavorite: json['is_favorite'] as bool,
+    );
+
+Map<String, dynamic> _$CodyFavoriteResponseToJson(
+        CodyFavoriteResponse instance) =>
+    <String, dynamic>{
+      'is_favorite': instance.isFavorite,
+    };
