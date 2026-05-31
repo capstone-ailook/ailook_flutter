@@ -35,12 +35,16 @@ class UserProfileModel {
   /// 유저 닉네임
   final String nickname;
 
+  /// 유저 프로필 이미지 URL
+  final String? photoUrl;
+
   UserProfileModel({
     required this.gender,
     required this.height,
     required this.weight,
     required this.age,
     required this.nickname,
+    this.photoUrl,
   });
 
   factory UserProfileModel.fromEntity(UserProfileEntity entity) {
@@ -50,6 +54,7 @@ class UserProfileModel {
       weight: entity.weight,
       age: entity.age,
       nickname: entity.nickname,
+      photoUrl: entity.photoUrl,
     );
   }
 

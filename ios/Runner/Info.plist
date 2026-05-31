@@ -58,5 +58,9 @@
 	</array>
 	<key>GIDClientID</key>
 	<string>110772501654-0i9ueetecd6d3mu17udm8611r5oi9nnb.apps.googleusercontent.com</string>
+	<key>NSCameraUsageDescription</key>
+	<string>코디 및 옷 아이템 등록을 위해 카메라 촬영 권한이 필요합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>코디 및 옷 아이템 등록을 위해 앨범 접근 권한이 필요합니다.</string>
 </dict>
 </plist>

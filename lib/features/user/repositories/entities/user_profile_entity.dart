@@ -33,12 +33,16 @@ class UserProfileEntity {
   /// 유저 닉네임
   final String nickname;
 
+  /// 유저 프로필 이미지 URL
+  final String? photoUrl;
+
   UserProfileEntity({
     required this.gender,
     required this.height,
     required this.weight,
     required this.age,
     required this.nickname,
+    this.photoUrl,
   });
 
   factory UserProfileEntity.fromModel(UserProfileModel model) {
@@ -48,6 +52,7 @@ class UserProfileEntity {
       weight: model.weight,
       age: model.age,
       nickname: model.nickname,
+      photoUrl: model.photoUrl,
     );
   }
 }

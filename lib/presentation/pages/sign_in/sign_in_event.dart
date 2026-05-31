@@ -58,7 +58,7 @@ mixin class SignInEvent {
         const OnboardingRoute().go(context);
       } else {
         // 프로필이 있으면 메인 페이지로 이동
-        const MainRoute().go(context);
+        CodyListRoute().go(context);
       }
     } catch (e) {
       debugPrint('Post Sign In Routing Error: $e');

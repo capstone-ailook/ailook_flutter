@@ -34,7 +34,17 @@ class UserAuth extends _$UserAuth {
     result.fold(
       onSuccess: (value) => ref.invalidateSelf(),
       onFailure: (e) {
-        // SnackBarService.showSnackBar('$e');
+        print('$e');
+      },
+    );
+  }
+
+  /// 회원탈퇴를 시도한다.
+  Future<void> deleteAccount() async {
+    final result = await deleteAccountUseCase();
+    result.fold(
+      onSuccess: (value) => ref.invalidateSelf(),
+      onFailure: (e) {
         print('$e');
       },
     );

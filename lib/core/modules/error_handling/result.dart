@@ -4,18 +4,22 @@ abstract class Result<T> {
   static Result<T> success<T>(T value) => Success<T>(value);
 
   T getOrThrow() {
-    return this is Success
-        ? (this as Success).value
-        : throw (this as Failure).error;
+    if (this is Success<T>) {
+      return (this as Success<T>).value;
+    } else {
+      throw (this as Failure<T>).error;
+    }
   }
 
   R fold<R>({
     required R Function(T value) onSuccess,
     required R Function(Exception e) onFailure,
   }) {
-    return this is Success
-        ? onSuccess((this as Success).value)
-        : onFailure((this as Failure).error);
+    if (this is Success<T>) {
+      return onSuccess((this as Success<T>).value);
+    } else {
+      return onFailure((this as Failure<T>).error);
+    }
   }
 }
 

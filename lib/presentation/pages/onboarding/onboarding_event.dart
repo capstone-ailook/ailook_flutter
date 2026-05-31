@@ -65,7 +65,7 @@ mixin class OnboardingEvent {
       result.fold(
         onSuccess: (_) {
           // 메인 화면으로 이동
-          const MainRoute().go(context);
+          CodyListRoute().go(context);
         },
         onFailure: (error) {
           messenger.showSnackBar(

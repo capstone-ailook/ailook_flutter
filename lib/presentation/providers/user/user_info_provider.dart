@@ -16,7 +16,6 @@ class UserInfo extends _$UserInfo {
       return null;
     }
 
-    // Use GetIt locator (via user.dart final variable)
     final result = await getUserProfileUseCase.call();
 
     return result.fold(

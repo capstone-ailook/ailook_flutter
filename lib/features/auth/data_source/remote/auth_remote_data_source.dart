@@ -15,4 +15,9 @@ abstract interface class AuthRemoteDataSource {
   /// Auth 로그아웃
   ///
   Future<void> signOut();
+
+  ///
+  /// 회원탈퇴
+  ///
+  Future<void> deleteAccount();
 }

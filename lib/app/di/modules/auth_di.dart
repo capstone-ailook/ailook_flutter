@@ -17,6 +17,7 @@ final class AuthDependencyInjection extends FeatureDependencyInjection {
     locator.registerLazySingleton<AuthRepository>(
       () => AuthRepositoryImpl(
         authRemoteDataSource,
+        locator(),
       ),
     );
   }
@@ -31,6 +32,11 @@ final class AuthDependencyInjection extends FeatureDependencyInjection {
       )
       ..registerFactory(
         () => SignOutUseCase(
+          authRepository,
+        ),
+      )
+      ..registerFactory(
+        () => DeleteAccountUseCase(
           authRepository,
         ),
       );

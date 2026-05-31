@@ -28,6 +28,7 @@ UserProfileModel _$UserProfileModelFromJson(Map<String, dynamic> json) =>
       weight: (json['weight'] as num).toDouble(),
       age: json['age'] as String,
       nickname: json['nickname'] as String,
+      photoUrl: json['photo_url'] as String?,
     );
 
 Map<String, dynamic> _$UserProfileModelToJson(UserProfileModel instance) =>
@@ -37,4 +38,5 @@ Map<String, dynamic> _$UserProfileModelToJson(UserProfileModel instance) =>
       'weight': instance.weight,
       'age': instance.age,
       'nickname': instance.nickname,
+      'photo_url': instance.photoUrl,
     };
