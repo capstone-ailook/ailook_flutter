@@ -26,8 +26,9 @@ class _AppDio with DioMixin implements Dio {
     httpClientAdapter = IOHttpClientAdapter();
     options = BaseOptions(
       connectTimeout: Duration(milliseconds: 30000),
-      receiveTimeout: Duration(milliseconds: 30000),
-      sendTimeout: Duration(milliseconds: 30000),
+      // RAG 코디 추천은 BGE-M3 + Gemini 2콜로 수~십수 초 걸릴 수 있음
+      receiveTimeout: Duration(milliseconds: 120000),
+      sendTimeout: Duration(milliseconds: 60000),
       receiveDataWhenStatusError: true,
     );
 

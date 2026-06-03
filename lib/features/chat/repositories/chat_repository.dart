@@ -5,6 +5,6 @@ abstract interface class ChatRepository {
   Future<Result<ChatSessionListEntity>> getSessions();
   Future<Result<ChatSessionEntity>> createSession(String title);
   Future<Result<List<ChatMessageEntity>>> getSessionMessages(int id);
-  Future<Result<ChatResponseDataEntity>> sendMessage(int id, String text, {String? imageUrl, Map<String, dynamic>? profile});
+  Future<Result<ChatResponseDataEntity>> sendMessage(int id, String text, {String? imageUrl, Map<String, dynamic>? profile, int? anchorItemId});
   Future<Result<void>> deleteSession(int id);
 }

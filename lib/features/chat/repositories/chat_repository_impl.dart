@@ -1,7 +1,18 @@
 import 'package:ailook_flutter/core/modules/error_handling/result.dart';
 import 'package:ailook_flutter/features/chat/data_source/remote/chat_remote_data_source.dart';
+import 'package:ailook_flutter/features/chat/data_source/remote/models/chat_model.dart';
 import 'package:ailook_flutter/features/chat/repositories/entities/chat_entity.dart';
 import 'package:ailook_flutter/features/chat/repositories/chat_repository.dart';
+
+List<OutfitEntity> _toOutfitEntities(List<OutfitModel> models) => models
+    .map((o) => OutfitEntity(
+          image: o.image,
+          imageUrl: o.imageUrl,
+          score: o.score,
+          substyle: o.substyle,
+          captionSnippet: o.captionSnippet,
+        ))
+    .toList();
 
 final class ChatRepositoryImpl implements ChatRepository {
   final ChatRemoteDataSource _remoteDataSource;
@@ -46,6 +57,9 @@ final class ChatRepositoryImpl implements ChatRepository {
         role: m.role,
         text: m.text,
         imageUrl: m.imageUrl,
+        outfits: _toOutfitEntities(m.outfits),
+        anchorItemId: m.anchorItemId,
+        anchorCategory: m.anchorCategory,
       )).toList();
       return Result.success(messages);
     } catch (e) {
@@ -54,12 +68,15 @@ final class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<Result<ChatResponseDataEntity>> sendMessage(int id, String text, {String? imageUrl, Map<String, dynamic>? profile}) async {
+  Future<Result<ChatResponseDataEntity>> sendMessage(int id, String text, {String? imageUrl, Map<String, dynamic>? profile, int? anchorItemId}) async {
     try {
-      final response = await _remoteDataSource.sendMessage(id, text, imageUrl, profile);
+      final response = await _remoteDataSource.sendMessage(id, text, imageUrl, profile, anchorItemId);
       return Result.success(ChatResponseDataEntity(
         reply: response.reply,
         imageUrl: response.imageUrl,
+        outfits: _toOutfitEntities(response.outfits),
+        anchorItemId: response.anchorItemId,
+        anchorCategory: response.anchorCategory,
       ));
     } catch (e) {
       return Result.failure(Exception(e.toString()));
