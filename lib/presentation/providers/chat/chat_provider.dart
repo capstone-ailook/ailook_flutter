@@ -41,7 +41,7 @@ class ChatImage extends _$ChatImage {
 class ChatSessionList extends _$ChatSessionList {
   @override
   FutureOr<List<ChatSessionEntity>> build() async {
-    final result = await ref.watch(chatRepositoryProvider).getSessions();
+    final result = await ref.read(chatRepositoryProvider).getSessions();
     return result.fold(
       onSuccess: (data) => data.sessions,
       onFailure: (error) => throw error,
@@ -74,7 +74,7 @@ class ChatMessages extends _$ChatMessages {
   FutureOr<List<ChatMessageEntity>> build(int? argSessionId) async {
     if (argSessionId == null) return [];
     
-    final result = await ref.watch(chatRepositoryProvider).getSessionMessages(argSessionId);
+    final result = await ref.read(chatRepositoryProvider).getSessionMessages(argSessionId);
     return result.fold(
       onSuccess: (data) => data,
       onFailure: (error) => throw error,
