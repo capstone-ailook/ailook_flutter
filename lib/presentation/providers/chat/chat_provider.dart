@@ -72,6 +72,7 @@ class ChatSessionList extends _$ChatSessionList {
 class ChatMessages extends _$ChatMessages {
   @override
   FutureOr<List<ChatMessageEntity>> build(int? argSessionId) async {
+    ref.keepAlive();
     if (argSessionId == null) return [];
     
     final result = await ref.read(chatRepositoryProvider).getSessionMessages(argSessionId);
