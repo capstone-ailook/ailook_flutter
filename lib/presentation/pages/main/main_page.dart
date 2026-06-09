@@ -44,22 +44,22 @@ class MainPage extends StatelessWidget {
             BottomNavigationBarItem(
               icon: Icon(Icons.style_outlined),
               activeIcon: Icon(Icons.style),
-              label: 'Cody',
+              label: '코디',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.checkroom_outlined),
               activeIcon: Icon(Icons.checkroom),
-              label: 'Closet',
+              label: '옷장',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.chat_bubble_outline),
               activeIcon: Icon(Icons.chat_bubble),
-              label: 'Chat',
+              label: '채팅',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
-              label: 'Profile',
+              label: '프로필',
             ),
           ],
         ),
