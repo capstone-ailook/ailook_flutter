@@ -3,6 +3,10 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ailook_flutter/features/auth/auth.dart';
+import 'package:ailook_flutter/presentation/providers/chat/chat_provider.dart';
+import 'package:ailook_flutter/presentation/providers/closet/closet_list_provider.dart';
+import 'package:ailook_flutter/presentation/providers/cody/cody_list_provider.dart';
+import 'package:ailook_flutter/presentation/providers/user/user_info_provider.dart';
 
 part 'user_auth_provider.g.dart';
 
@@ -28,11 +32,21 @@ class UserAuth extends _$UserAuth {
     );
   }
 
+  void _invalidateUserDataProviders() {
+    ref.invalidate(chatSessionListProvider);
+    ref.invalidate(codyListProvider);
+    ref.invalidate(closetListProvider);
+    ref.invalidate(userInfoProvider);
+  }
+
   /// 로그아웃을 시도한다.
   Future<void> signOut() async {
     final result = await signOutUseCase();
     result.fold(
-      onSuccess: (value) => ref.invalidateSelf(),
+      onSuccess: (value) {
+        _invalidateUserDataProviders();
+        ref.invalidateSelf();
+      },
       onFailure: (e) {
         print('$e');
       },
@@ -43,10 +57,14 @@ class UserAuth extends _$UserAuth {
   Future<void> deleteAccount() async {
     final result = await deleteAccountUseCase();
     result.fold(
-      onSuccess: (value) => ref.invalidateSelf(),
+      onSuccess: (value) {
+        _invalidateUserDataProviders();
+        ref.invalidateSelf();
+      },
       onFailure: (e) {
         print('$e');
       },
     );
   }
 }
+

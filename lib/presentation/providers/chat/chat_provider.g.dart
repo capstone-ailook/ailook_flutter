@@ -159,7 +159,7 @@ final class ChatSessionListProvider
   ChatSessionList create() => ChatSessionList();
 }
 
-String _$chatSessionListHash() => r'adfd624b524726d9b41c826ad97afebdda18debb';
+String _$chatSessionListHash() => r'd0d206cc04e021ea6be70e16e23fb7311af91759';
 
 abstract class _$ChatSessionList
     extends $AsyncNotifier<List<ChatSessionEntity>> {
@@ -219,7 +219,7 @@ final class ChatMessagesProvider
   }
 }
 
-String _$chatMessagesHash() => r'b0a3658f8ce591d1ac83e2585343c44cc29c8e86';
+String _$chatMessagesHash() => r'b9b03215075b6c066e76024ca6eec350686a8043';
 
 final class ChatMessagesFamily extends $Family
     with

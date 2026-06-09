@@ -43,7 +43,7 @@ final class UserAuthProvider extends $NotifierProvider<UserAuth, User?> {
   }
 }
 
-String _$userAuthHash() => r'43339791902b02402ef0e9e7478bc05656a4bf76';
+String _$userAuthHash() => r'de9044976873f3877ef9dd6a3099f37fbbd14f59';
 
 /// 앱 사용자 권한 프로바이더
 

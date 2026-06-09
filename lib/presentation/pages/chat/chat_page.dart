@@ -19,6 +19,26 @@ class ChatPage extends HookConsumerWidget {
     final textController = useTextEditingController();
     final scrollController = useScrollController();
 
+    // Reset chat session to start fresh if the app was in background for > 30 seconds
+    final lastPausedTime = useRef<DateTime?>(null);
+
+    useEffect(() {
+      final observer = _LifecycleObserver(
+        onPaused: () => lastPausedTime.value = DateTime.now(),
+        onResumed: () {
+          if (lastPausedTime.value != null) {
+            final diff = DateTime.now().difference(lastPausedTime.value!);
+            // 30 seconds of background time resets the chat session
+            if (diff.inSeconds > 30) {
+              selectedSessionId.value = null;
+            }
+          }
+        },
+      );
+      WidgetsBinding.instance.addObserver(observer);
+      return () => WidgetsBinding.instance.removeObserver(observer);
+    }, []);
+
     // Scroll to bottom when messages change
     useEffect(() {
       if (scrollController.hasClients) {
@@ -746,3 +766,20 @@ class _ChatEmptyState extends StatelessWidget {
     );
   }
 }
+
+class _LifecycleObserver extends WidgetsBindingObserver {
+  final VoidCallback onPaused;
+  final VoidCallback onResumed;
+
+  _LifecycleObserver({required this.onPaused, required this.onResumed});
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      onPaused();
+    } else if (state == AppLifecycleState.resumed) {
+      onResumed();
+    }
+  }
+}
+

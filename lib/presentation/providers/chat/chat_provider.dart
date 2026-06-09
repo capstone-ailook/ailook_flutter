@@ -5,6 +5,7 @@ import 'package:ailook_flutter/features/chat/repositories/chat_repository.dart';
 import 'package:ailook_flutter/features/chat/repositories/chat_repository_impl.dart';
 import 'package:ailook_flutter/features/chat/repositories/entities/chat_entity.dart';
 import 'package:ailook_flutter/features/media/repositories/media_repository.dart';
+import 'package:ailook_flutter/presentation/providers/user/user_info_provider.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -41,6 +42,7 @@ class ChatImage extends _$ChatImage {
 class ChatSessionList extends _$ChatSessionList {
   @override
   FutureOr<List<ChatSessionEntity>> build() async {
+    ref.keepAlive();
     final result = await ref.read(chatRepositoryProvider).getSessions();
     return result.fold(
       onSuccess: (data) => data.sessions,
@@ -49,14 +51,21 @@ class ChatSessionList extends _$ChatSessionList {
   }
 
   Future<void> refresh() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final result = await ref.read(chatRepositoryProvider).getSessions();
-      return result.fold(
-        onSuccess: (data) => data.sessions,
-        onFailure: (error) => throw error,
-      );
-    });
+    // Keep provider alive during async refresh
+    final keepAliveLink = ref.keepAlive();
+    try {
+      state = const AsyncLoading();
+      state = await AsyncValue.guard(() async {
+        final result = await ref.read(chatRepositoryProvider).getSessions();
+        return result.fold(
+          onSuccess: (data) => data.sessions,
+          onFailure: (error) => throw error,
+        );
+      });
+    } finally {
+      // Release keepAlive link
+      keepAliveLink.close();
+    }
   }
 
   Future<void> deleteSession(int id) async {
@@ -72,7 +81,6 @@ class ChatSessionList extends _$ChatSessionList {
 class ChatMessages extends _$ChatMessages {
   @override
   FutureOr<List<ChatMessageEntity>> build(int? argSessionId) async {
-    ref.keepAlive();
     if (argSessionId == null) return [];
     
     final result = await ref.read(chatRepositoryProvider).getSessionMessages(argSessionId);
@@ -80,6 +88,23 @@ class ChatMessages extends _$ChatMessages {
       onSuccess: (data) => data,
       onFailure: (error) => throw error,
     );
+  }
+  /// Clear cached messages for the current session (if any).
+  Future<void> clearCache() async {
+    final sessionId = argSessionId;
+    if (sessionId != null) {
+      // Reset provider state to empty list without triggering a network fetch.
+      ref.read(chatMessagesProvider(sessionId).notifier).state = const AsyncData([]);
+    }
+  }
+
+  /// Clear cached messages for all chat sessions.
+  Future<void> clearAllCaches() async {
+    final sessions = await ref.read(chatSessionListProvider.future);
+    for (final s in sessions) {
+      // Clear each session's messages.
+      ref.read(chatMessagesProvider(s.id).notifier).state = const AsyncData([]);
+    }
   }
 
   Future<int?> sendMessage(String text, {int? anchorItemId}) async {
@@ -98,12 +123,25 @@ class ChatMessages extends _$ChatMessages {
       ref.read(chatImageProvider.notifier).clear();
     }
 
+    final userProfileVal = ref.read(userInfoProvider).value;
+    Map<String, dynamic>? profileMap;
+    if (userProfileVal != null && userProfileVal.exists && userProfileVal.profile != null) {
+      final profile = userProfileVal.profile!;
+      profileMap = {
+        'gender': profile.gender,
+        'age': profile.age,
+        'height': profile.height,
+        'weight': profile.weight,
+        'nickname': profile.nickname,
+      };
+    }
+
     if (currentSessionId == null) {
       // Create new session first
       final sessionResult = await ref.read(chatRepositoryProvider).createSession('');
       return sessionResult.fold(
         onSuccess: (session) async {
-          await _sendToSession(session.id, text, imageUrl: imageUrl, anchorItemId: anchorItemId);
+          await _sendToSession(session.id, text, imageUrl: imageUrl, profile: profileMap, anchorItemId: anchorItemId);
           
           // Pre-populate the new session's message provider state to avoid loading flash
           final finalMessages = state.asData?.value ?? [];
@@ -117,12 +155,12 @@ class ChatMessages extends _$ChatMessages {
         onFailure: (error) => throw error,
       );
     } else {
-      await _sendToSession(currentSessionId, text, imageUrl: imageUrl, anchorItemId: anchorItemId);
+      await _sendToSession(currentSessionId, text, imageUrl: imageUrl, profile: profileMap, anchorItemId: anchorItemId);
       return currentSessionId;
     }
   }
 
-  Future<void> _sendToSession(int id, String text, {String? imageUrl, int? anchorItemId}) async {
+  Future<void> _sendToSession(int id, String text, {String? imageUrl, Map<String, dynamic>? profile, int? anchorItemId}) async {
     final previousMessages = state.asData?.value ?? [];
 
     // Optimistic update: Add user message and a temporary loading message
@@ -130,7 +168,7 @@ class ChatMessages extends _$ChatMessages {
     final loadingMessage = const ChatMessageEntity(role: 'loading', text: '');
     state = AsyncData([...previousMessages, userMessage, loadingMessage]);
 
-    final result = await ref.read(chatRepositoryProvider).sendMessage(id, text, imageUrl: imageUrl, anchorItemId: anchorItemId);
+    final result = await ref.read(chatRepositoryProvider).sendMessage(id, text, imageUrl: imageUrl, profile: profile, anchorItemId: anchorItemId);
 
     result.fold(
       onSuccess: (data) {

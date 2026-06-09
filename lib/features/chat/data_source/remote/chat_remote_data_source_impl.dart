@@ -27,10 +27,10 @@ final class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
 
   @override
   Future<ChatResponseModel> sendMessage(int id, String text, String? imageUrl, Map<String, dynamic>? profile, int? anchorItemId) {
-    final body = {
+    final body = <String, dynamic>{
       'message': text,
-      'image_url': imageUrl ?? '',
-      if (profile != null) 'profile': profile,
+      if (imageUrl != null && imageUrl.isNotEmpty) 'image_url': imageUrl,
+      if (profile != null && profile.isNotEmpty) 'profile': profile,
       if (anchorItemId != null) 'anchor_item_id': anchorItemId,
     };
     return _chatAPI.sendMessage(id, body);
