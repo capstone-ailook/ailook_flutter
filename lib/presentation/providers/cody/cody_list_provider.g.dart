@@ -20,7 +20,7 @@ final class CodyListProvider
           argument: null,
           retry: null,
           name: r'codyListProvider',
-          isAutoDispose: true,
+          isAutoDispose: false,
           dependencies: null,
           $allTransitiveDependencies: null,
         );
@@ -33,7 +33,7 @@ final class CodyListProvider
   CodyList create() => CodyList();
 }
 
-String _$codyListHash() => r'051e987e1a9ca4dbfb3323f59d5f68e5de53c4d8';
+String _$codyListHash() => r'3ceb2d037b5cd8f4e895aeaf12d675fa5549bb6c';
 
 abstract class _$CodyList extends $AsyncNotifier<CodyListState> {
   FutureOr<CodyListState> build();

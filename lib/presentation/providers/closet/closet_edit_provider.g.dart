@@ -41,7 +41,7 @@ final class ClosetEditProvider
   }
 }
 
-String _$closetEditHash() => r'8138bf5cef0596a8ae046e350b412b0278cf0725';
+String _$closetEditHash() => r'7b5027d72c7a63f98023825993657a4db5141028';
 
 abstract class _$ClosetEdit extends $Notifier<ClosetEditState> {
   ClosetEditState build();

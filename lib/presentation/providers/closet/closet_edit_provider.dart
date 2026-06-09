@@ -105,6 +105,7 @@ class ClosetEdit extends _$ClosetEdit {
       return false;
     }
 
+    final keepAliveLink = ref.keepAlive();
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -163,10 +164,13 @@ class ClosetEdit extends _$ClosetEdit {
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
       return false;
+    } finally {
+      keepAliveLink.close();
     }
   }
 
   Future<bool> delete(int id) async {
+    final keepAliveLink = ref.keepAlive();
     state = state.copyWith(isLoading: true, error: null);
     try {
       final codyRepo = locator<CodyRepository>();
@@ -185,6 +189,8 @@ class ClosetEdit extends _$ClosetEdit {
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
       return false;
+    } finally {
+      keepAliveLink.close();
     }
   }
 }

@@ -20,7 +20,7 @@ final class ClosetListProvider
           argument: null,
           retry: null,
           name: r'closetListProvider',
-          isAutoDispose: true,
+          isAutoDispose: false,
           dependencies: null,
           $allTransitiveDependencies: null,
         );
@@ -33,7 +33,7 @@ final class ClosetListProvider
   ClosetList create() => ClosetList();
 }
 
-String _$closetListHash() => r'0bbd9e1bae08a484e6704c33ec8ae3ee56b70a96';
+String _$closetListHash() => r'cf1f209c03fa57a3903f662f383da2569e797030';
 
 abstract class _$ClosetList extends $AsyncNotifier<ClosetListState> {
   FutureOr<ClosetListState> build();

@@ -151,6 +151,7 @@ class CodyEdit extends _$CodyEdit {
       return false;
     }
 
+    final keepAliveLink = ref.keepAlive();
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -211,10 +212,13 @@ class CodyEdit extends _$CodyEdit {
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
       return false;
+    } finally {
+      keepAliveLink.close();
     }
   }
 
   Future<bool> delete(int id) async {
+    final keepAliveLink = ref.keepAlive();
     state = state.copyWith(isLoading: true, error: null);
     try {
       final codyRepo = locator<CodyRepository>();
@@ -233,6 +237,8 @@ class CodyEdit extends _$CodyEdit {
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
       return false;
+    } finally {
+      keepAliveLink.close();
     }
   }
 }

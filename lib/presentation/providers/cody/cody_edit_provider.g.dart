@@ -41,7 +41,7 @@ final class CodyEditProvider
   }
 }
 
-String _$codyEditHash() => r'2b8838f64d8e310e498bae872dfa2a11cd5575a0';
+String _$codyEditHash() => r'9a06058dd97680732b48d9f2f5cbcc2db6d5f95b';
 
 abstract class _$CodyEdit extends $Notifier<CodyEditState> {
   CodyEditState build();

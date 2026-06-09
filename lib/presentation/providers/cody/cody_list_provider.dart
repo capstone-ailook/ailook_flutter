@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'cody_list_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class CodyList extends _$CodyList {
   @override
   FutureOr<CodyListState> build() async {

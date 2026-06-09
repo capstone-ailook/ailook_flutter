@@ -31,7 +31,7 @@ class ClosetListState {
   }
 }
 
-@Riverpod()
+@Riverpod(keepAlive: true)
 class ClosetList extends _$ClosetList {
   @override
   FutureOr<ClosetListState> build() async {
