@@ -15,7 +15,7 @@ class ProfileEditPage extends BasePage {
       elevation: 0,
       centerTitle: true,
       title: const Text(
-        'EDIT PROFILE',
+        '프로필 수정',
         style: TextStyle(
           color: Colors.black,
           fontSize: 18,
@@ -94,16 +94,16 @@ class ProfileEditPage extends BasePage {
             ),
           ),
           const SizedBox(height: 40),
-          _SectionTitle('Nickname'),
+          _SectionTitle('닉네임'),
           TextField(
             controller: nicknameController,
             onChanged: (val) => ref.read(profileEditProvider.notifier).updateNickname(val),
-            decoration: _inputDecoration('Your nickname'),
+            decoration: _inputDecoration('닉네임을 입력해주세요'),
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 32),
 
-          _SectionTitle('Gender'),
+          _SectionTitle('성별'),
           Row(
             children: [
               _GenderButton(
@@ -121,10 +121,10 @@ class ProfileEditPage extends BasePage {
           ),
           const SizedBox(height: 32),
 
-          _SectionTitle('Age Stage'),
+          _SectionTitle('연령대'),
           DropdownButtonFormField<String>(
             value: state.age,
-            decoration: _inputDecoration('Pick your age range'),
+            decoration: _inputDecoration('연령대를 선택해주세요'),
             dropdownColor: Colors.white,
             items: ['10대', '20대', '30대', '40대', '50대 이상']
                 .map((e) => DropdownMenuItem(value: e, child: Text(e)))
@@ -142,7 +142,7 @@ class ProfileEditPage extends BasePage {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SectionTitle('Height'),
+                    _SectionTitle('키'),
                     TextField(
                       controller: heightController,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -150,7 +150,7 @@ class ProfileEditPage extends BasePage {
                         final parsed = double.tryParse(val);
                         if (parsed != null) ref.read(profileEditProvider.notifier).updateHeight(parsed);
                       },
-                      decoration: _inputDecoration('Height').copyWith(suffixText: 'cm'),
+                      decoration: _inputDecoration('키').copyWith(suffixText: 'cm'),
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                   ],
@@ -161,7 +161,7 @@ class ProfileEditPage extends BasePage {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SectionTitle('Weight'),
+                    _SectionTitle('몸무게'),
                     TextField(
                       controller: weightController,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -169,7 +169,7 @@ class ProfileEditPage extends BasePage {
                         final parsed = double.tryParse(val);
                         if (parsed != null) ref.read(profileEditProvider.notifier).updateWeight(parsed);
                       },
-                      decoration: _inputDecoration('Weight').copyWith(suffixText: 'kg'),
+                      decoration: _inputDecoration('몸무게').copyWith(suffixText: 'kg'),
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                   ],

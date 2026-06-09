@@ -17,7 +17,7 @@ class ProfilePage extends ConsumerWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          'MY PROFILE',
+          '내 프로필',
           style: TextStyle(
             color: Colors.black,
             fontSize: 20,
@@ -75,38 +75,38 @@ class ProfilePage extends ConsumerWidget {
 
               // Info Section
               const Text(
-                'Personal Info',
+                '개인 정보',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 16),
               _InfoGrid(
                 items: [
-                  _InfoItem(label: 'Gender', value: profile?.gender ?? '-'),
-                  _InfoItem(label: 'Age', value: profile?.age ?? '-'),
-                  _InfoItem(label: 'Height', value: profile != null ? '${profile.height} cm' : '-'),
-                  _InfoItem(label: 'Weight', value: profile != null ? '${profile.weight} kg' : '-'),
+                  _InfoItem(label: '성별', value: profile?.gender ?? '-'),
+                  _InfoItem(label: '연령대', value: profile?.age ?? '-'),
+                  _InfoItem(label: '키', value: profile != null ? '${profile.height} cm' : '-'),
+                  _InfoItem(label: '몸무게', value: profile != null ? '${profile.weight} kg' : '-'),
                 ],
               ),
               const SizedBox(height: 40),
 
               // Actions
               const Text(
-                'Settings',
+                '설정',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
               _ActionTile(
                 icon: Icons.edit_note_rounded,
-                label: 'Edit Profile',
+                label: '프로필 수정',
                 onTap: () {
                   const ProfileEditRoute().push(context);
                 },
               ),
               _ActionTile(
                 icon: Icons.logout_rounded,
-                label: 'Sign Out',
+                label: '로그아웃',
                 onTap: () async {
-                  EasyLoading.show(status: 'Signing out...');
+                  EasyLoading.show(status: '로그아웃 중...');
                   try {
                     await ref.read(userAuthProvider.notifier).signOut();
                     if (context.mounted) {
@@ -119,25 +119,25 @@ class ProfilePage extends ConsumerWidget {
               ),
               _ActionTile(
                 icon: Icons.person_remove_rounded,
-                label: 'Delete Account',
+                label: '회원탈퇴',
                 isDestructive: true,
                 onTap: () async {
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: const Text('Delete Account'),
-                      content: const Text('Are you sure you want to delete your account? This action cannot be undone.'),
+                      title: const Text('회원탈퇴'),
+                      content: const Text('정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.'),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('취소')),
                         TextButton(
                           onPressed: () => Navigator.pop(context, true),
-                          child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                          child: const Text('탈퇴', style: TextStyle(color: Colors.red)),
                         ),
                       ],
                     ),
                   );
                   if (confirm == true) {
-                    EasyLoading.show(status: 'Deleting account...');
+                    EasyLoading.show(status: '탈퇴 처리 중...');
                     try {
                       await ref.read(userAuthProvider.notifier).deleteAccount();
                       if (context.mounted) {
