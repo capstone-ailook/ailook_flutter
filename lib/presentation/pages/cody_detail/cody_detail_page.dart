@@ -236,15 +236,13 @@ class CodyDetailPage extends BasePage {
                 final success = await ref.read(codyEditProvider.notifier).delete(cody.id);
                 
                 if (success) {
-                  // kept-alive 리스트가 삭제를 반영하도록 네비게이션 전에 리페치
-                  await ref.read(codyListProvider.notifier).refresh();
+                  ref.invalidate(codyListProvider);
                   await EasyLoading.dismiss();
+                  EasyLoading.showSuccess('Deleted');
 
                   if (context.mounted) {
                     CodyListRoute().go(context);
                   }
-
-                  EasyLoading.showSuccess('Deleted');
                 } else {
                   await EasyLoading.dismiss();
                   EasyLoading.showError('Failed to delete');

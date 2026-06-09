@@ -243,17 +243,13 @@ class ClosetDetailPage extends BasePage {
                 final success = await ref.read(closetEditProvider.notifier).delete(item.id);
                 
                 if (success) {
+                  ref.invalidate(closetListProvider);
                   await EasyLoading.dismiss();
+                  EasyLoading.showSuccess('Deleted');
                   
-                  // Use the main context for navigation
                   if (context.mounted) {
                     ClosetListRoute().go(context);
                   }
-                  
-                  EasyLoading.showSuccess('Deleted');
-                  
-                  // Final safeguard: Refresh list
-                  ref.read(closetListProvider.notifier).refresh();
                 } else {
                   await EasyLoading.dismiss();
                   EasyLoading.showError('Failed to delete');

@@ -41,7 +41,7 @@ class SignInPage extends BasePage with SignInEvent {
               _SocialLoginButton(
                 onPressed: () => handleAppleSignIn(context, ref),
                 icon: const Icon(Icons.apple, color: Colors.black, size: 24),
-                label: 'Sign in with Apple',
+                label: 'Apple로 시작하기',
               ),
               const SizedBox(height: 12),
               _SocialLoginButton(
@@ -51,7 +51,7 @@ class SignInPage extends BasePage with SignInEvent {
                   width: 20,
                   height: 20,
                 ),
-                label: 'Sign in with Google',
+                label: 'Google로 시작하기',
               ),
 
               const SizedBox(height: 48),
