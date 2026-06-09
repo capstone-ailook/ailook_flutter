@@ -85,11 +85,11 @@ class ChatPage extends HookConsumerWidget {
             controller: textController,
             onSend: (text) async {
               if (text.trim().isEmpty) return;
+              textController.clear();
               final newId = await ref.read(chatMessagesProvider(selectedSessionId.value).notifier).sendMessage(text);
               if (selectedSessionId.value == null && newId != null) {
                 selectedSessionId.value = newId;
               }
-              textController.clear();
             },
           ),
         ],
