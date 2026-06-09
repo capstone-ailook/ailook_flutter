@@ -100,7 +100,7 @@ class ChatPage extends HookConsumerWidget {
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) {
-        return const _ChatHistorySheet();
+        return _ChatHistorySheet(activeSessionId: selectedId.value);
       },
     ).then((newId) {
       if (newId != null && newId is int) {
@@ -606,7 +606,8 @@ class _ChatInput extends ConsumerWidget {
 }
 
 class _ChatHistorySheet extends ConsumerWidget {
-  const _ChatHistorySheet();
+  final int? activeSessionId;
+  const _ChatHistorySheet({this.activeSessionId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -642,15 +643,45 @@ class _ChatHistorySheet extends ConsumerWidget {
                       itemCount: sessions.length,
                       itemBuilder: (context, index) {
                         final session = sessions[index];
+                        final isActive = session.id == activeSessionId;
                         return ListTile(
-                          leading: const Icon(Icons.chat_bubble_outline_rounded, size: 20),
-                          title: Text(session.title ?? 'New Chat', maxLines: 1, overflow: TextOverflow.ellipsis),
+                          leading: Icon(
+                            Icons.chat_bubble_outline_rounded,
+                            size: 20,
+                            color: isActive ? Colors.black : Colors.grey[600],
+                          ),
+                          title: Text(
+                            session.title ?? 'New Chat',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                              color: isActive ? Colors.black : Colors.black87,
+                            ),
+                          ),
                           subtitle: Text(session.createdAt?.split('T').first ?? ''),
                           onTap: () => Navigator.pop(context, session.id),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
-                            onPressed: () => _showDeleteConfirmation(context, ref, session),
-                          ),
+                          trailing: isActive
+                              ? Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[100],
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.black12),
+                                  ),
+                                  child: const Text(
+                                    '현재 채팅',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                )
+                              : IconButton(
+                                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                                  onPressed: () => _showDeleteConfirmation(context, ref, session),
+                                ),
                         );
                       },
                     ),
