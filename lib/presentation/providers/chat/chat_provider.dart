@@ -81,7 +81,7 @@ class ChatMessages extends _$ChatMessages {
     );
   }
 
-  Future<void> sendMessage(String text, {int? anchorItemId}) async {
+  Future<int?> sendMessage(String text, {int? anchorItemId}) async {
     final currentSessionId = argSessionId;
     final imagePath = ref.read(chatImageProvider);
     String? imageUrl;
@@ -100,14 +100,24 @@ class ChatMessages extends _$ChatMessages {
     if (currentSessionId == null) {
       // Create new session first
       final sessionResult = await ref.read(chatRepositoryProvider).createSession('');
-      sessionResult.fold(
+      return sessionResult.fold(
         onSuccess: (session) async {
           await _sendToSession(session.id, text, imageUrl: imageUrl, anchorItemId: anchorItemId);
+          
+          // Pre-populate the new session's message provider state to avoid loading flash
+          final finalMessages = state.asData?.value ?? [];
+          ref.read(chatMessagesProvider(session.id).notifier).state = AsyncData(finalMessages);
+          
+          // Refresh the sessions list so the new session is loaded in history
+          ref.read(chatSessionListProvider.notifier).refresh();
+          
+          return session.id;
         },
         onFailure: (error) => throw error,
       );
     } else {
       await _sendToSession(currentSessionId, text, imageUrl: imageUrl, anchorItemId: anchorItemId);
+      return currentSessionId;
     }
   }
 
