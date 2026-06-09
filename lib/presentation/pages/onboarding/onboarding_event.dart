@@ -1,5 +1,6 @@
 import 'package:ailook_flutter/features/user/user.dart';
 import 'package:ailook_flutter/presentation/providers/user/user_auth_provider.dart';
+import 'package:ailook_flutter/presentation/providers/user/user_info_provider.dart';
 import 'package:ailook_flutter/app/router/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -64,6 +65,7 @@ mixin class OnboardingEvent {
       EasyLoading.dismiss();
       result.fold(
         onSuccess: (_) {
+          ref.invalidate(userInfoProvider);
           // 메인 화면으로 이동
           CodyListRoute().go(context);
         },
@@ -83,9 +85,14 @@ mixin class OnboardingEvent {
 
   /// 온보딩 과정에서 로그아웃하고 로그인 화면으로 돌아간다.
   Future<void> handleLogout(BuildContext context, WidgetRef ref) async {
-    await ref.read(userAuthProvider.notifier).signOut();
-    if (context.mounted) {
-      const SignInRoute().go(context);
+    EasyLoading.show(status: 'Signing out...');
+    try {
+      await ref.read(userAuthProvider.notifier).signOut();
+      if (context.mounted) {
+        const SignInRoute().go(context);
+      }
+    } finally {
+      EasyLoading.dismiss();
     }
   }
 
