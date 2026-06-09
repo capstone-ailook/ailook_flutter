@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'package:ailook_flutter/app/di/app_binding.dart';
 import 'package:ailook_flutter/features/chat/repositories/entities/chat_entity.dart';
+import 'package:ailook_flutter/features/cody/cody.dart';
 import 'package:ailook_flutter/presentation/providers/chat/chat_provider.dart';
+import 'package:ailook_flutter/presentation/providers/cody/cody_list_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -116,6 +119,7 @@ class _MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final isUser = message.role == 'user';
     final isLoading = message.role == 'loading';
+    final hasOutfits = !isUser && !isLoading && message.outfits.isNotEmpty;
 
     if (isLoading) {
       return Align(
@@ -153,7 +157,8 @@ class _MessageBubble extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * (hasOutfits ? 0.85 : 0.75)),
         decoration: BoxDecoration(
           color: isUser ? Colors.black : Colors.grey[100],
           borderRadius: BorderRadius.only(
@@ -174,12 +179,226 @@ class _MessageBubble extends StatelessWidget {
                   child: Image.network(message.imageUrl!),
                 ),
               ),
-            Text(
-              message.text,
-              style: TextStyle(
-                color: isUser ? Colors.white : Colors.black87,
-                fontSize: 15,
-                height: 1.4,
+            if (hasOutfits)
+              ..._buildRichBody(context, message.text, message.outfits,
+                  message.anchorItemId, message.anchorCategory)
+            else
+              Text(
+                message.text,
+                style: TextStyle(
+                  color: isUser ? Colors.white : Colors.black87,
+                  fontSize: 15,
+                  height: 1.4,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// AI 답변의 `[image: 파일명]` 토큰을 outfits와 매칭해 텍스트 사이에 카드를 끼워 렌더링.
+  /// 매칭 안 되는 토큰은 건너뛰고, 토큰이 하나도 안 걸리면 outfits를 하단에 폴백 노출.
+  List<Widget> _buildRichBody(BuildContext context, String text,
+      List<OutfitEntity> outfits, int? anchorItemId, String? anchorCategory) {
+    final byImage = {for (final o in outfits) o.image: o};
+    final widgets = <Widget>[];
+    final used = <String>{};
+    final re = RegExp(r'\[image:\s*([^\]]+)\]');
+    int last = 0;
+    Widget card(OutfitEntity o) => _OutfitCard(
+        outfit: o, anchorItemId: anchorItemId, anchorCategory: anchorCategory);
+    for (final m in re.allMatches(text)) {
+      final before = text.substring(last, m.start).trim();
+      if (before.isNotEmpty) widgets.add(_aiText(before));
+      final fname = m.group(1)!.trim();
+      final outfit = byImage[fname];
+      if (outfit != null) {
+        widgets.add(card(outfit));
+        used.add(fname);
+      }
+      last = m.end;
+    }
+    final tail = text.substring(last).trim();
+    if (tail.isNotEmpty) widgets.add(_aiText(tail));
+    if (used.isEmpty) {
+      for (final o in outfits) {
+        widgets.add(card(o));
+      }
+    }
+    return widgets;
+  }
+
+  Widget _aiText(String t) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Text(t,
+            style: const TextStyle(
+                color: Colors.black87, fontSize: 15, height: 1.4)),
+      );
+}
+
+class _OutfitCard extends StatelessWidget {
+  final OutfitEntity outfit;
+  final int? anchorItemId;
+  final String? anchorCategory;
+  const _OutfitCard({required this.outfit, this.anchorItemId, this.anchorCategory});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.white,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        builder: (_) => _OutfitDetailSheet(
+            outfit: outfit,
+            anchorItemId: anchorItemId,
+            anchorCategory: anchorCategory),
+      ),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 3 / 4,
+              child: Image.network(
+                outfit.imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                    color: Colors.grey.shade100,
+                    child: const Icon(Icons.broken_image_outlined,
+                        color: Colors.grey)),
+                loadingBuilder: (c, child, p) => p == null
+                    ? child
+                    : Container(
+                        color: Colors.grey.shade50,
+                        child: const Center(
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.black26))),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  if (outfit.substyle != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(20)),
+                      child: Text(outfit.substyle!,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  const Spacer(),
+                  const Icon(Icons.add_circle_outline_rounded,
+                      size: 20, color: Colors.black54),
+                  const SizedBox(width: 4),
+                  const Text('코디 저장',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black54)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OutfitDetailSheet extends ConsumerWidget {
+  final OutfitEntity outfit;
+  final int? anchorItemId;
+  final String? anchorCategory;
+  const _OutfitDetailSheet(
+      {required this.outfit, this.anchorItemId, this.anchorCategory});
+
+  Future<void> _saveAsCody(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final body = <String, dynamic>{
+      'name': 'AI 추천 코디',
+      'description': outfit.captionSnippet ?? '',
+      'image_url': outfit.imageUrl,
+      'tags': [if (outfit.substyle != null) outfit.substyle!],
+    };
+    // 클로젯-탭 추천이면 앵커(사용자 실제 Item)를 해당 슬롯에 연결 (D9 c)
+    if (anchorItemId != null &&
+        (anchorCategory == 'top' || anchorCategory == 'bottom')) {
+      body[anchorCategory!] = anchorItemId;
+    }
+    final result = await locator<CodyRepository>().createCody(body);
+    navigator.pop();
+    result.fold(
+      onSuccess: (_) {
+        // kept-alive 코디 리스트가 새 코디를 반영하도록 리페치 (#1)
+        ref.invalidate(codyListProvider);
+        messenger.showSnackBar(
+            const SnackBar(content: Text('내 코디에 저장했어요 👕')));
+      },
+      onFailure: (e) => messenger
+          .showSnackBar(SnackBar(content: Text('저장 실패: $e'))),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 300),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(outfit.imageUrl, fit: BoxFit.contain),
+              ),
+            ),
+            const SizedBox(height: 14),
+            if (outfit.substyle != null)
+              Text('#${outfit.substyle}',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 14)),
+            if (outfit.captionSnippet != null) ...[
+              const SizedBox(height: 6),
+              Text(outfit.captionSnippet!,
+                  style: const TextStyle(
+                      color: Colors.black54, fontSize: 13, height: 1.4)),
+            ],
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                onPressed: () => _saveAsCody(context, ref),
+                icon: const Icon(Icons.checkroom_rounded, size: 20),
+                label: const Text('이 코디로 저장',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
               ),
             ),
           ],

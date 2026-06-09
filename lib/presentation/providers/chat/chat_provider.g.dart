@@ -121,7 +121,7 @@ final class ChatImageProvider extends $NotifierProvider<ChatImage, String?> {
   }
 }
 
-String _$chatImageHash() => r'ed3a4e08a8f072f6dd2eb4c4295d0dd3b6d8154f';
+String _$chatImageHash() => r'b2ff349d7e1500c20617a1f2306cdf6865cecf11';
 
 abstract class _$ChatImage extends $Notifier<String?> {
   String? build();
@@ -219,7 +219,7 @@ final class ChatMessagesProvider
   }
 }
 
-String _$chatMessagesHash() => r'19b1232958629ee12c5408a1c7116458f8ff496f';
+String _$chatMessagesHash() => r'3edd8e41f645037a695906e1a665e7c015bb6550';
 
 final class ChatMessagesFamily extends $Family
     with

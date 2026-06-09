@@ -41,7 +41,7 @@ class ChatImage extends _$ChatImage {
 class ChatSessionList extends _$ChatSessionList {
   @override
   FutureOr<List<ChatSessionEntity>> build() async {
-    final result = await ref.watch(chatRepositoryProvider).getSessions();
+    final result = await ref.read(chatRepositoryProvider).getSessions();
     return result.fold(
       onSuccess: (data) => data.sessions,
       onFailure: (error) => throw error,
@@ -74,14 +74,14 @@ class ChatMessages extends _$ChatMessages {
   FutureOr<List<ChatMessageEntity>> build(int? argSessionId) async {
     if (argSessionId == null) return [];
     
-    final result = await ref.watch(chatRepositoryProvider).getSessionMessages(argSessionId);
+    final result = await ref.read(chatRepositoryProvider).getSessionMessages(argSessionId);
     return result.fold(
       onSuccess: (data) => data,
       onFailure: (error) => throw error,
     );
   }
 
-  Future<void> sendMessage(String text) async {
+  Future<void> sendMessage(String text, {int? anchorItemId}) async {
     final currentSessionId = argSessionId;
     final imagePath = ref.read(chatImageProvider);
     String? imageUrl;
@@ -102,28 +102,28 @@ class ChatMessages extends _$ChatMessages {
       final sessionResult = await ref.read(chatRepositoryProvider).createSession('');
       sessionResult.fold(
         onSuccess: (session) async {
-          await _sendToSession(session.id, text, imageUrl: imageUrl);
+          await _sendToSession(session.id, text, imageUrl: imageUrl, anchorItemId: anchorItemId);
         },
         onFailure: (error) => throw error,
       );
     } else {
-      await _sendToSession(currentSessionId, text, imageUrl: imageUrl);
+      await _sendToSession(currentSessionId, text, imageUrl: imageUrl, anchorItemId: anchorItemId);
     }
   }
 
-  Future<void> _sendToSession(int id, String text, {String? imageUrl}) async {
+  Future<void> _sendToSession(int id, String text, {String? imageUrl, int? anchorItemId}) async {
     final previousMessages = state.asData?.value ?? [];
-    
+
     // Optimistic update: Add user message and a temporary loading message
     final userMessage = ChatMessageEntity(role: 'user', text: text, imageUrl: imageUrl);
     final loadingMessage = const ChatMessageEntity(role: 'loading', text: '');
     state = AsyncData([...previousMessages, userMessage, loadingMessage]);
 
-    final result = await ref.read(chatRepositoryProvider).sendMessage(id, text, imageUrl: imageUrl);
-    
+    final result = await ref.read(chatRepositoryProvider).sendMessage(id, text, imageUrl: imageUrl, anchorItemId: anchorItemId);
+
     result.fold(
       onSuccess: (data) {
-        final aiMessage = ChatMessageEntity(role: 'ai', text: data.reply, imageUrl: data.imageUrl);
+        final aiMessage = ChatMessageEntity(role: 'ai', text: data.reply, imageUrl: data.imageUrl, outfits: data.outfits, anchorItemId: data.anchorItemId, anchorCategory: data.anchorCategory);
         state = AsyncData([...previousMessages, userMessage, aiMessage]);
       },
       onFailure: (error) {
